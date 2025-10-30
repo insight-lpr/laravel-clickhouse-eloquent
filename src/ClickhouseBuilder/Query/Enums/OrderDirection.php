@@ -2,13 +2,39 @@
 
 namespace LaravelClickhouseEloquent\ClickhouseBuilder\Query\Enums;
 
-use MyCLabs\Enum\Enum;
-
 /**
  * Order directions.
  */
-final class OrderDirection extends Enum
+enum OrderDirection: string
 {
-    public const ASC = 'ASC';
-    public const DESC = 'DESC';
+    case ASC = 'ASC';
+    case DESC = 'DESC';
+
+    /**
+     * Check if a value is a valid enum value.
+     */
+    public static function isValid(mixed $value): bool
+    {
+        if (!is_string($value)) {
+            return false;
+        }
+
+        return self::tryFrom($value) !== null;
+    }
+
+    /**
+     * Get the enum value as a string.
+     */
+    public function getValue(): string
+    {
+        return $this->value;
+    }
+
+    /**
+     * Get the enum case name.
+     */
+    public function getKey(): string
+    {
+        return $this->name;
+    }
 }

@@ -44,7 +44,7 @@ class ArrayJoinClause
      */
     public function left(): self
     {
-        return $this->type(JoinType::LEFT);
+        return $this->type(JoinType::LEFT->value);
     }
 
     /**

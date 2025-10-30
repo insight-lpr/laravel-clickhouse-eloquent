@@ -101,7 +101,7 @@ class Builder extends BaseBuilder
      *
      * @return array
      */
-    public function insertFiles(array $columns, array $files, string $format = Format::CSV, int $concurrency = 5, array $settings = []): array
+    public function insertFiles(array $columns, array $files, string $format = Format::CSV->value, int $concurrency = 5, array $settings = []): array
     {
         foreach ($files as $i => $file) {
             $files[$i] = $this->prepareFile($file);
@@ -120,7 +120,7 @@ class Builder extends BaseBuilder
      *
      * @return bool
      */
-    public function insertFile(array $columns, $file, string $format = Format::CSV, array $settings = []): bool
+    public function insertFile(array $columns, $file, string $format = Format::CSV->value, array $settings = []): bool
     {
         $file = $this->prepareFile($file);
 

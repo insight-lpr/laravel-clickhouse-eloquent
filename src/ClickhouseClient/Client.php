@@ -50,7 +50,7 @@ class Client
      */
     public function __construct(
         ServerProvider $serverProvider,
-        TransportInterface $transport = null
+        TransportInterface $transport = null,
     ) {
         $this->serverProvider = $serverProvider;
         $this->setTransport($transport);
@@ -138,7 +138,9 @@ class Client
     {
         $this->serverHostname = function () {
             if ($this->isOnCluster()) {
-                return $this->serverProvider->getRandomServerFromCluster($this->getClusterName());
+                return $this->serverProvider->getRandomServerFromCluster(
+                    $this->getClusterName(),
+                );
             } else {
                 return $this->serverProvider->getRandomServer();
             }
@@ -158,7 +160,10 @@ class Client
     {
         $this->serverHostname = function () use ($tag) {
             if ($this->isOnCluster()) {
-                return $this->serverProvider->getRandomServerFromClusterByTag($this->getClusterName(), $tag);
+                return $this->serverProvider->getRandomServerFromClusterByTag(
+                    $this->getClusterName(),
+                    $tag,
+                );
             } else {
                 return $this->serverProvider->getRandomServerWithTag($tag);
             }
@@ -192,12 +197,14 @@ class Client
                  * If no server provided, will take random server from cluster
                  */
                 if (is_null($this->serverHostname)) {
-                    $server = $this->serverProvider->getRandomServerFromCluster($this->getClusterName());
+                    $server = $this->serverProvider->getRandomServerFromCluster(
+                        $this->getClusterName(),
+                    );
                     $this->serverHostname = $server->getHost();
                 } else {
                     $server = $this->serverProvider->getServerFromCluster(
                         $this->getClusterName(),
-                        $this->serverHostname
+                        $this->serverHostname,
                     );
                 }
             } else {
@@ -208,7 +215,9 @@ class Client
                     $server = $this->serverProvider->getRandomServer();
                     $this->serverHostname = $server->getHost();
                 } else {
-                    $server = $this->serverProvider->getServer($this->serverHostname);
+                    $server = $this->serverProvider->getServer(
+                        $this->serverHostname,
+                    );
                 }
             }
         }
@@ -229,9 +238,17 @@ class Client
      *
      * @return \Tinderbox\Clickhouse\Query\Result
      */
-    public function readOne(string $query, array $files = [], array $settings = []): Result
-    {
-        $query = $this->createQuery($this->getServer(), $query, $files, $settings);
+    public function readOne(
+        string $query,
+        array $files = [],
+        array $settings = [],
+    ): Result {
+        $query = $this->createQuery(
+            $this->getServer(),
+            $query,
+            $files,
+            $settings,
+        );
 
         $result = $this->getTransport()->read([$query], 1);
 
@@ -266,10 +283,18 @@ class Client
      *
      * @return bool
      */
-    public function writeOne(string $query, array $files = [], array $settings = []): bool
-    {
+    public function writeOne(
+        string $query,
+        array $files = [],
+        array $settings = [],
+    ): bool {
         if (!$query instanceof Query) {
-            $query = $this->createQuery($this->getServer(), $query, $files, $settings);
+            $query = $this->createQuery(
+                $this->getServer(),
+                $query,
+                $files,
+                $settings,
+            );
         }
 
         $result = $this->getTransport()->write([$query], 1);
@@ -314,9 +339,15 @@ class Client
         array $files,
         string $format = Format::TSV,
         array $settings = [],
-        int $concurrency = 5
+        int $concurrency = 5,
     ) {
-        $sql = 'INSERT INTO '.$table.' ('.implode(', ', $columns).') FORMAT '.strtoupper($format);
+        $sql =
+            "INSERT INTO " .
+            $table .
+            " (" .
+            implode(", ", $columns) .
+            ") FORMAT " .
+            strtoupper($format);
 
         foreach ($files as $i => $file) {
             if (!$file instanceof FileInterface) {
@@ -324,7 +355,12 @@ class Client
             }
         }
 
-        $query = $this->createQuery($this->getServer(), $sql, $files, $settings);
+        $query = $this->createQuery(
+            $this->getServer(),
+            $sql,
+            $files,
+            $settings,
+        );
 
         return $this->getTransport()->write([$query], $concurrency);
     }
@@ -343,7 +379,7 @@ class Client
         Server $server,
         string $sql,
         array $files = [],
-        array $settings = []
+        array $settings = [],
     ): Query {
         return new Query($server, $sql, $files, $settings);
     }
@@ -357,10 +393,10 @@ class Client
      */
     protected function guessQuery(array $query): Query
     {
-        $server = $query['server'] ?? $this->getServer();
-        $sql = $query['query'];
-        $tables = $query['files'] ?? [];
-        $settings = $query['settings'] ?? [];
+        $server = $query["server"] ?? $this->getServer();
+        $sql = $query["query"];
+        $tables = $query["files"] ?? [];
+        $settings = $query["settings"] ?? [];
 
         return $this->createQuery($server, $sql, $tables, $settings);
     }

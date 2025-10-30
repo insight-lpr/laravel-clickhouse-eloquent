@@ -73,3 +73,34 @@ composer update --no-scripts
 ## Rollback
 
 If rollback is needed, see `VENDOR_MIGRATION.md` for detailed instructions.
+---
+
+## Enum Migration (Update)
+
+### What Was Done
+All MyCLabs Enum classes have been migrated to native PHP 8.1+ enums.
+
+### Enums Converted (5 total)
+1. **Format** - 25 format types for ClickHouse queries
+2. **JoinType** - 6 join types (INNER, LEFT, RIGHT, FULL, CROSS, ASOF)
+3. **JoinStrict** - 2 join strictness levels (ALL, ANY)
+4. **Operator** - 24 query operators (=, !=, IN, BETWEEN, etc.)
+5. **OrderDirection** - 2 sorting directions (ASC, DESC)
+
+### Changes Made
+- Converted all enum classes from `final class X extends Enum` to `enum X: string`
+- Updated all 87 enum constant references to use `->value` property
+- Added backward compatibility methods: `isValid()`, `getValue()`, `getKey()`
+- Removed `myclabs/php-enum` dependency from composer.json
+
+### Benefits
+✅ **Zero External Dependencies for Enums**: No longer depends on myclabs/php-enum
+✅ **Modern PHP**: Uses native PHP 8.1+ enum feature
+✅ **Better Performance**: Native enums are more efficient
+✅ **Improved Type Safety**: Compile-time type checking
+✅ **Better IDE Support**: Native enum autocomplete and navigation
+
+### Backward Compatibility
+✅ **100% Compatible**: No breaking changes, all existing code works
+
+See `ENUM_MIGRATION.md` for detailed documentation.

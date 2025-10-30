@@ -2,35 +2,61 @@
 
 namespace LaravelClickhouseEloquent\ClickhouseBuilder\Query\Enums;
 
-use MyCLabs\Enum\Enum;
-
 /**
  * Operators.
  */
-final class Operator extends Enum
+enum Operator: string
 {
-    public const EQUALS = '=';
-    public const NOT_EQUALS = '!=';
-    public const LESS_OR_EQUALS = '<=';
-    public const GREATER_OR_EQUALS = '>=';
-    public const LESS = '<';
-    public const GREATER = '>';
-    public const LIKE = 'LIKE';
-    public const ILIKE = 'ILIKE';
-    public const NOT_LIKE = 'NOT LIKE';
-    public const BETWEEN = 'BETWEEN';
-    public const NOT_BETWEEN = 'NOT BETWEEN';
-    public const IN = 'IN';
-    public const NOT_IN = 'NOT IN';
-    public const GLOBAL_IN = 'GLOBAL IN';
-    public const GLOBAL_NOT_IN = 'GLOBAL NOT IN';
-    public const AND = 'AND';
-    public const OR = 'OR';
-    public const CONCAT = '||';
-    public const LAMBDA = '->';
-    public const DIVIDE = '/';
-    public const MODULO = '%';
-    public const MULTIPLE = '*';
-    public const PLUS = '+';
-    public const MINUS = '-';
+    case EQUALS = '=';
+    case NOT_EQUALS = '!=';
+    case LESS_OR_EQUALS = '<=';
+    case GREATER_OR_EQUALS = '>=';
+    case LESS = '<';
+    case GREATER = '>';
+    case LIKE = 'LIKE';
+    case ILIKE = 'ILIKE';
+    case NOT_LIKE = 'NOT LIKE';
+    case BETWEEN = 'BETWEEN';
+    case NOT_BETWEEN = 'NOT BETWEEN';
+    case IN = 'IN';
+    case NOT_IN = 'NOT IN';
+    case GLOBAL_IN = 'GLOBAL IN';
+    case GLOBAL_NOT_IN = 'GLOBAL NOT IN';
+    case AND = 'AND';
+    case OR = 'OR';
+    case CONCAT = '||';
+    case LAMBDA = '->';
+    case DIVIDE = '/';
+    case MODULO = '%';
+    case MULTIPLE = '*';
+    case PLUS = '+';
+    case MINUS = '-';
+
+    /**
+     * Check if a value is a valid enum value.
+     */
+    public static function isValid(mixed $value): bool
+    {
+        if (!is_string($value)) {
+            return false;
+        }
+
+        return self::tryFrom($value) !== null;
+    }
+
+    /**
+     * Get the enum value as a string.
+     */
+    public function getValue(): string
+    {
+        return $this->value;
+    }
+
+    /**
+     * Get the enum case name.
+     */
+    public function getKey(): string
+    {
+        return $this->name;
+    }
 }

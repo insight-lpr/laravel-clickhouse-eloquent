@@ -23,7 +23,6 @@
     "smi2/phpclickhouse": "^1.4.2",
     "illuminate/support": ">=12",
     "illuminate/database": ">=12",
-    "myclabs/php-enum": "^1.5",
     "guzzlehttp/guzzle": "^6.0|^7.0"
   },
   "require-dev": {

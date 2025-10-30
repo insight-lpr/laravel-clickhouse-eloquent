@@ -41,20 +41,20 @@ class Grammar
     use TupleCompiler;
 
     protected $selectComponents = [
-        'columns',
-        'from',
-        'sample',
-        'arrayJoin',
-        'joins',
-        'prewheres',
-        'wheres',
-        'groups',
-        'havings',
-        'orders',
-        'limitBy',
-        'limit',
-        'unions',
-        'format',
+        "columns",
+        "from",
+        "sample",
+        "arrayJoin",
+        "joins",
+        "prewheres",
+        "wheres",
+        "groups",
+        "havings",
+        "orders",
+        "limitBy",
+        "limit",
+        "unions",
+        "format",
     ];
 
     /**
@@ -73,15 +73,21 @@ class Grammar
         $sql = [];
 
         foreach ($this->selectComponents as $component) {
-            $compileMethod = 'compile'.ucfirst($component).'Component';
-            $component = 'get'.ucfirst($component);
+            $compileMethod = "compile" . ucfirst($component) . "Component";
+            $component = "get" . ucfirst($component);
 
-            if (!is_null($query->$component()) && !empty($query->$component())) {
-                $sql[$component] = $this->$compileMethod($query, $query->$component());
+            if (
+                !is_null($query->$component()) &&
+                !empty($query->$component())
+            ) {
+                $sql[$component] = $this->$compileMethod(
+                    $query,
+                    $query->$component(),
+                );
             }
         }
 
-        return trim('SELECT '.trim(implode(' ', $sql)));
+        return trim("SELECT " . trim(implode(" ", $sql)));
     }
 
     /**
@@ -110,9 +116,9 @@ class Grammar
             throw GrammarException::missedTableForInsert();
         }
 
-        $format = $query->getFormat() ?? Format::VALUES;
+        $format = $query->getFormat() ?? Format::VALUES->value;
 
-        if ($format == Format::VALUES) {
+        if ($format == Format::VALUES->value) {
             $columns = array_map(function ($col) {
                 return is_string($col) ? new Identifier($col) : null;
             }, array_keys($values[0]));
@@ -124,17 +130,17 @@ class Grammar
 
         $result[] = "INSERT INTO {$table}";
 
-        if ($columns !== '') {
+        if ($columns !== "") {
             $result[] = "({$columns})";
         }
 
-        $result[] = 'FORMAT '.$format;
+        $result[] = "FORMAT " . $format;
 
-        if ($format == Format::VALUES) {
+        if ($format == Format::VALUES->value) {
             $result[] = $this->compileInsertValues($values);
         }
 
-        return implode(' ', $result);
+        return implode(" ", $result);
     }
 
     /**
@@ -149,18 +155,28 @@ class Grammar
      *
      * @return string
      */
-    public function compileCreateTable($tableName, string $engine, array $structure, bool $ifNotExists = false, ?string $clusterName = null, ?string $extraOptions = null): string
-    {
+    public function compileCreateTable(
+        $tableName,
+        string $engine,
+        array $structure,
+        bool $ifNotExists = false,
+        ?string $clusterName = null,
+        ?string $extraOptions = null,
+    ): string {
         if ($tableName instanceof Identifier) {
             $tableName = (string) $tableName;
         }
 
-        $onCluster = $clusterName === null ? '' : "ON CLUSTER {$clusterName}";
-        $extraOptions = $extraOptions ?? '';
+        $onCluster = $clusterName === null ? "" : "ON CLUSTER {$clusterName}";
+        $extraOptions = $extraOptions ?? "";
 
-        return 'CREATE TABLE '
-            .($ifNotExists ? 'IF NOT EXISTS ' : '')
-            .rtrim("{$tableName} {$onCluster} ({$this->compileTableStructure($structure)}) ENGINE = {$engine} {$extraOptions}");
+        return "CREATE TABLE " .
+            ($ifNotExists ? "IF NOT EXISTS " : "") .
+            rtrim(
+                "{$tableName} {$onCluster} ({$this->compileTableStructure(
+                    $structure,
+                )}) ENGINE = {$engine} {$extraOptions}",
+            );
     }
 
     /**
@@ -172,15 +188,22 @@ class Grammar
      *
      * @return string
      */
-    public function compileDropTable($tableName, bool $ifExists = false, ?string $clusterName = null): string
-    {
+    public function compileDropTable(
+        $tableName,
+        bool $ifExists = false,
+        ?string $clusterName = null,
+    ): string {
         if ($tableName instanceof Identifier) {
             $tableName = (string) $tableName;
         }
 
-        $onCluster = $clusterName === null ? '' : "ON CLUSTER {$clusterName}";
+        $onCluster = $clusterName === null ? "" : "ON CLUSTER {$clusterName}";
 
-        return trim('DROP TABLE '.($ifExists ? 'IF EXISTS ' : '')."{$tableName} {$onCluster}");
+        return trim(
+            "DROP TABLE " .
+                ($ifExists ? "IF EXISTS " : "") .
+                "{$tableName} {$onCluster}",
+        );
     }
 
     /**
@@ -195,19 +218,27 @@ class Grammar
         $result = [];
 
         foreach ($structure as $column => $type) {
-            $result[] = $column.' '.$type;
+            $result[] = $column . " " . $type;
         }
 
-        return implode(', ', $result);
+        return implode(", ", $result);
     }
 
     public function compileInsertValues($values)
     {
-        return implode(', ', array_map(function ($value) {
-            return '('.implode(', ', array_map(function ($value) {
-                return $this->wrap($value);
-            }, $value)).')';
-        }, $values));
+        return implode(
+            ", ",
+            array_map(function ($value) {
+                return "(" .
+                    implode(
+                        ", ",
+                        array_map(function ($value) {
+                            return $this->wrap($value);
+                        }, $value),
+                    ) .
+                    ")";
+            }, $values),
+        );
     }
 
     /**
@@ -229,10 +260,13 @@ class Grammar
             $sql .= " ON CLUSTER {$query->getOnCluster()}";
         }
 
-        $sql .= ' DELETE';
+        $sql .= " DELETE";
 
         if (!is_null($query->getWheres()) && !empty($query->getWheres())) {
-            $sql .= " {$this->compileWheresComponent($query, $query->getWheres())}";
+            $sql .= " {$this->compileWheresComponent(
+                $query,
+                $query->getWheres(),
+            )}";
         } else {
             throw GrammarException::missedWhereForDelete();
         }
@@ -252,7 +286,7 @@ class Grammar
         if ($value instanceof Expression) {
             return $value->getValue();
         } elseif (is_array($value)) {
-            return array_map([$this, 'wrap'], $value);
+            return array_map([$this, "wrap"], $value);
         } elseif (is_string($value)) {
             $value = addslashes($value);
 
@@ -260,14 +294,20 @@ class Grammar
         } elseif ($value instanceof Identifier) {
             $value = (string) $value;
 
-            if (strpos(strtolower($value), '.') !== false) {
-                return implode('.', array_map(function ($element) {
-                    return $this->wrap(new Identifier($element));
-                }, array_map('trim', preg_split('/\./', $value))));
+            if (strpos(strtolower($value), ".") !== false) {
+                return implode(
+                    ".",
+                    array_map(function ($element) {
+                        return $this->wrap(new Identifier($element));
+                    }, array_map("trim", preg_split("/\./", $value))),
+                );
             }
 
-            if (strpos(strtolower($value), ' as ') !== false) {
-                list($value, $alias) = array_map('trim', preg_split('/\s+as\s+/i', $value));
+            if (strpos(strtolower($value), " as ") !== false) {
+                [$value, $alias] = array_map(
+                    "trim",
+                    preg_split("/\s+as\s+/i", $value),
+                );
 
                 $value = $this->wrap(new Identifier($value));
                 $alias = $this->wrap(new Identifier($alias));
@@ -277,15 +317,15 @@ class Grammar
                 return $value;
             }
 
-            if ($value === '*') {
+            if ($value === "*") {
                 return $value;
             }
 
-            return '`'.str_replace('`', '``', $value).'`';
+            return "`" . str_replace("`", "``", $value) . "`";
         } elseif (is_numeric($value)) {
             return $value;
         } elseif (is_null($value)) {
-            return 'null';
+            return "null";
         } else {
             return;
         }

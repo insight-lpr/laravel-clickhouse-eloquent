@@ -134,7 +134,7 @@ class JoinClause
      *
      * @return JoinClause
      */
-    public function on($first, string $operator, $second, string $concatOperator = Operator::AND): self
+    public function on($first, string $operator, $second, string $concatOperator = Operator::AND->value): self
     {
         $expression = (new TwoElementsLogicExpression($this->query))
             ->firstElement(is_string($first) ? new Identifier($first) : $first)
@@ -196,7 +196,7 @@ class JoinClause
      */
     public function all(): self
     {
-        return $this->strict(JoinStrict::ALL);
+        return $this->strict(JoinStrict::ALL->value);
     }
 
     /**
@@ -206,7 +206,7 @@ class JoinClause
      */
     public function any(): self
     {
-        return $this->strict(JoinStrict::ANY);
+        return $this->strict(JoinStrict::ANY->value);
     }
 
     /**
@@ -216,7 +216,7 @@ class JoinClause
      */
     public function inner(): self
     {
-        return $this->type(JoinType::INNER);
+        return $this->type(JoinType::INNER->value);
     }
 
     /**
@@ -226,7 +226,7 @@ class JoinClause
      */
     public function left(): self
     {
-        return $this->type(JoinType::LEFT);
+        return $this->type(JoinType::LEFT->value);
     }
 
     /**

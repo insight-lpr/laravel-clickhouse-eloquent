@@ -35,12 +35,12 @@ trait TwoElementsLogicExpressionsCompiler
             /*
              * If not between is used, operator should be placed before first element
              */
-            if ($operator == Operator::NOT_BETWEEN) {
+            if ($operator == Operator::NOT_BETWEEN->value) {
                 $result[] = 'NOT (';
 
                 $result[] = $this->compileElement($firstElement);
 
-                $result[] = Operator::BETWEEN;
+                $result[] = Operator::BETWEEN->value;
 
                 $result[] = $this->compileElement($secondElement);
 
