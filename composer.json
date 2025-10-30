@@ -1,44 +1,47 @@
 {
-  "name":"akbarali1/laravel-clickhouse-eloquent",
-  "version" : "0.2.0.0",
-  "description":"Adapter of the most popular library https://github.com/smi2/phpClickHouse to Laravel",
-  "keywords":[
+  "name": "akbarali1/laravel-clickhouse-eloquent",
+  "version": "0.2.0.0",
+  "description": "Adapter of the most popular library https://github.com/smi2/phpClickHouse to Laravel",
+  "keywords": [
     "php",
     "laravel",
     "clickhouse"
   ],
-  "homepage":"https://github.com/akbarali1/laravel-clickhouse-eloquent",
-  "type":"library",
+  "homepage": "https://github.com/akbarali1/laravel-clickhouse-eloquent",
+  "type": "library",
   "minimum-stability": "stable",
-  "license":"MIT",
-  "authors":[
+  "license": "MIT",
+  "authors": [
     {
-      "name":"Akbarali",
-      "email":"github@akbarali.uz",
-      "homepage":"https://github.com/akbarali1"
+      "name": "Akbarali",
+      "email": "github@akbarali.uz",
+      "homepage": "https://github.com/akbarali1"
     }
   ],
-  "require":{
-    "php":">=8.0",
-    "smi2/phpclickhouse":"^1.4.2",
-    "the-tinderbox/clickhouse-builder":"^6.0",
-    "illuminate/support":">=7",
-    "illuminate/database":">=7"
+  "require": {
+    "php": ">=8.3",
+    "smi2/phpclickhouse": "^1.4.2",
+    "illuminate/support": ">=12",
+    "illuminate/database": ">=12",
+    "myclabs/php-enum": "^1.5",
+    "guzzlehttp/guzzle": "^6.0|^7.0"
   },
-  "require-dev":{
-    "laravel/framework":">=9",
-    "phpunit/phpunit":"^9"
+  "require-dev": {
+    "laravel/framework": ">=9",
+    "phpunit/phpunit": "^9"
   },
-  "suggest":{
+  "suggest": {},
+  "autoload": {
+    "psr-4": {
+      "LaravelClickhouseEloquent\\": "src/"
+    },
+    "files": [
+      "src/ClickhouseBuilder/functions.php"
+    ]
   },
-  "autoload":{
-    "psr-4":{
-      "LaravelClickhouseEloquent\\":"src/"
-    }
-  },
-  "autoload-dev":{
-    "psr-4":{
-      "Tests\\":"tests/"
+  "autoload-dev": {
+    "psr-4": {
+      "Tests\\": "tests/"
     }
   }
 }

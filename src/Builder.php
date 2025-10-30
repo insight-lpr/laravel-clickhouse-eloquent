@@ -7,11 +7,10 @@ namespace LaravelClickhouseEloquent;
 use ClickHouseDB\Client;
 use ClickHouseDB\Statement;
 use LaravelClickhouseEloquent\Exceptions\QueryException;
-use Tinderbox\ClickhouseBuilder\Query\BaseBuilder;
+use LaravelClickhouseEloquent\ClickhouseBuilder\Query\BaseBuilder;
 
 class Builder extends BaseBuilder
 {
-
     use WithClient;
 
     /** @var string */
@@ -101,7 +100,9 @@ class Builder extends BaseBuilder
     public function delete(): Statement
     {
         $table = $this->tableSources ?? $this->getFrom()->getTable();
-        $sql = "ALTER TABLE $table DELETE " . $this->grammar->compileWheresComponent($this, $this->getWheres());
+        $sql =
+            "ALTER TABLE $table DELETE " .
+            $this->grammar->compileWheresComponent($this, $this->getWheres());
         return $this->client->write($sql);
     }
 
@@ -119,8 +120,11 @@ class Builder extends BaseBuilder
         foreach ($values as $key => $value) {
             $set[] = "`$key` = " . $this->grammar->wrap($value);
         }
-        $sql = "ALTER TABLE $table UPDATE " . implode(', ', $set) . ' '
-            . $this->grammar->compileWheresComponent($this, $this->getWheres());
+        $sql =
+            "ALTER TABLE $table UPDATE " .
+            implode(", ", $set) .
+            " " .
+            $this->grammar->compileWheresComponent($this, $this->getWheres());
         return $this->client->write($sql);
     }
 
@@ -128,5 +132,4 @@ class Builder extends BaseBuilder
     {
         return new static($this->client);
     }
-
 }
