@@ -285,7 +285,7 @@ class HttpTransport implements TransportInterface
     /**
      * Parse temp table data to append it to request.
      *
-     * @param \Tinderbox\Clickhouse\Common\TempTable $table
+     * @param \LaravelClickhouseEloquent\ClickhouseClient\Common\TempTable $table
      *
      * @return array
      */
@@ -302,7 +302,7 @@ class HttpTransport implements TransportInterface
     /**
      * Assembles string from TempTable structure.
      *
-     * @param \Tinderbox\Clickhouse\Common\TempTable $table
+     * @param \LaravelClickhouseEloquent\ClickhouseClient\Common\TempTable $table
      *
      * @return string
      */
@@ -355,7 +355,7 @@ class HttpTransport implements TransportInterface
      * @param Query                               $query
      * @param \Psr\Http\Message\ResponseInterface $response
      *
-     * @return \Tinderbox\Clickhouse\Query\Result
+     * @return \LaravelClickhouseEloquent\ClickhouseClient\Query\Result
      */
     protected function assembleResult(Query $query, ResponseInterface $response): Result
     {
@@ -380,7 +380,7 @@ class HttpTransport implements TransportInterface
     /**
      * Builds uri with necessary params.
      *
-     * @param \Tinderbox\Clickhouse\Server $server
+     * @param \LaravelClickhouseEloquent\ClickhouseClient\Server $server
      * @param array                        $query
      * @param array                        $settings
      *

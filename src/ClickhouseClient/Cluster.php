@@ -19,14 +19,14 @@ class Cluster
     /**
      * Servers in cluster.
      *
-     * @var \Tinderbox\Clickhouse\Server[]
+     * @var \LaravelClickhouseEloquent\ClickhouseClient\Server[]
      */
     protected $servers = [];
 
     /**
      * Servers in cluster by tags.
      *
-     * @var \Tinderbox\Clickhouse\Server[][]
+     * @var \LaravelClickhouseEloquent\ClickhouseClient\Server[][]
      */
     protected $serversByTags = [];
 
@@ -49,9 +49,9 @@ class Cluster
      *
      * @param array $servers Each server can be provided as array or Server instance
      *
-     * @throws \Tinderbox\Clickhouse\Exceptions\ClusterException
+     * @throws \LaravelClickhouseEloquent\ClickhouseClient\Exceptions\ClusterException
      *
-     * @return \Tinderbox\Clickhouse\Cluster
+     * @return \LaravelClickhouseEloquent\ClickhouseClient\Cluster
      */
     public function addServers(array $servers): self
     {
@@ -82,9 +82,9 @@ class Cluster
      * Pushes one server to cluster.
      *
      * @param string                       $hostname
-     * @param \Tinderbox\Clickhouse\Server $server
+     * @param \LaravelClickhouseEloquent\ClickhouseClient\Server $server
      *
-     * @throws \Tinderbox\Clickhouse\Exceptions\ClusterException
+     * @throws \LaravelClickhouseEloquent\ClickhouseClient\Exceptions\ClusterException
      */
     public function addServer(string $hostname, Server $server)
     {
@@ -104,7 +104,7 @@ class Cluster
     /**
      * Returns servers in cluster.
      *
-     * @return \Tinderbox\Clickhouse\Server[]
+     * @return \LaravelClickhouseEloquent\ClickhouseClient\Server[]
      */
     public function getServers(): array
     {
@@ -118,7 +118,7 @@ class Cluster
      *
      * @throws ClusterException
      *
-     * @return \Tinderbox\Clickhouse\Server[]
+     * @return \LaravelClickhouseEloquent\ClickhouseClient\Server[]
      */
     public function getServersByTag(string $tag): array
     {
@@ -134,9 +134,9 @@ class Cluster
      *
      * @param string $hostname
      *
-     * @throws \Tinderbox\Clickhouse\Exceptions\ClusterException
+     * @throws \LaravelClickhouseEloquent\ClickhouseClient\Exceptions\ClusterException
      *
-     * @return \Tinderbox\Clickhouse\Server
+     * @return \LaravelClickhouseEloquent\ClickhouseClient\Server
      */
     public function getServerByHostname(string $hostname): Server
     {

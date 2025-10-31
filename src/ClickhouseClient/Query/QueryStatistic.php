@@ -107,7 +107,7 @@ class QueryStatistic
      *
      * @param string $name
      *
-     * @throws \Tinderbox\Clickhouse\Exceptions\QueryStatisticException
+     * @throws \LaravelClickhouseEloquent\ClickhouseClient\Exceptions\QueryStatisticException
      *
      * @return mixed
      */

@@ -45,8 +45,8 @@ class Client
     /**
      * Client constructor.
      *
-     * @param \Tinderbox\Clickhouse\ServerProvider                     $serverProvider
-     * @param \Tinderbox\Clickhouse\Interfaces\TransportInterface|null $transport
+     * @param \LaravelClickhouseEloquent\ClickhouseClient\ServerProvider                     $serverProvider
+     * @param \LaravelClickhouseEloquent\ClickhouseClient\Interfaces\TransportInterface|null $transport
      */
     public function __construct(
         ServerProvider $serverProvider,
@@ -69,7 +69,7 @@ class Client
     /**
      * Sets transport.
      *
-     * @param \Tinderbox\Clickhouse\Interfaces\TransportInterface|null $transport
+     * @param \LaravelClickhouseEloquent\ClickhouseClient\Interfaces\TransportInterface|null $transport
      */
     protected function setTransport(TransportInterface $transport = null)
     {
@@ -236,7 +236,7 @@ class Client
      * @param FileInterface[] $files
      * @param array           $settings
      *
-     * @return \Tinderbox\Clickhouse\Query\Result
+     * @return \LaravelClickhouseEloquent\ClickhouseClient\Query\Result
      */
     public function readOne(
         string $query,
@@ -368,12 +368,12 @@ class Client
     /**
      * Creates query instance from specified arguments.
      *
-     * @param \Tinderbox\Clickhouse\Server $server
+     * @param \LaravelClickhouseEloquent\ClickhouseClient\Server $server
      * @param string                       $sql
      * @param array                        $files
      * @param array                        $settings
      *
-     * @return \Tinderbox\Clickhouse\Query
+     * @return \LaravelClickhouseEloquent\ClickhouseClient\Query
      */
     protected function createQuery(
         Server $server,
@@ -389,7 +389,7 @@ class Client
      *
      * @param array $query
      *
-     * @return \Tinderbox\Clickhouse\Query
+     * @return \LaravelClickhouseEloquent\ClickhouseClient\Query
      */
     protected function guessQuery(array $query): Query
     {

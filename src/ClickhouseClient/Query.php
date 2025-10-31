@@ -24,7 +24,7 @@ class Query
     /**
      * Server to process query.
      *
-     * @var \Tinderbox\Clickhouse\Server
+     * @var \LaravelClickhouseEloquent\ClickhouseClient\Server
      */
     protected $server;
 
@@ -38,7 +38,7 @@ class Query
     /**
      * Query constructor.
      *
-     * @param \Tinderbox\Clickhouse\Server $server
+     * @param \LaravelClickhouseEloquent\ClickhouseClient\Server $server
      * @param string                       $query
      * @param array                        $files
      * @param array                        $settings
@@ -74,7 +74,7 @@ class Query
     /**
      * Returns server to process query.
      *
-     * @return \Tinderbox\Clickhouse\Server
+     * @return \LaravelClickhouseEloquent\ClickhouseClient\Server
      */
     public function getServer(): Server
     {

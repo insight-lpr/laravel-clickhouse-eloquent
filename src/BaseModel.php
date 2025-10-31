@@ -11,8 +11,8 @@ use Illuminate\Database\Eloquent\Concerns\HasAttributes;
 use Illuminate\Database\Eloquent\Concerns\HasEvents;
 use Illuminate\Database\Eloquent\Concerns\HidesAttributes;
 use Illuminate\Support\Str;
-use Tinderbox\ClickhouseBuilder\Query\Enums\Operator;
-use Tinderbox\ClickhouseBuilder\Query\TwoElementsLogicExpression;
+use LaravelClickhouseEloquent\ClickhouseBuilder\Query\Enums\Operator;
+use LaravelClickhouseEloquent\ClickhouseBuilder\Query\TwoElementsLogicExpression;
 
 class BaseModel
 {

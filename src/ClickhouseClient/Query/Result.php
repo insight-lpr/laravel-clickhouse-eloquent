@@ -19,7 +19,7 @@ class Result implements \ArrayAccess, \Iterator, \Countable
     /**
      * Query execution statistic.
      *
-     * @var \Tinderbox\Clickhouse\Query\QueryStatistic
+     * @var \LaravelClickhouseEloquent\ClickhouseClient\Query\QueryStatistic
      */
     protected $statistic;
 
@@ -49,7 +49,7 @@ class Result implements \ArrayAccess, \Iterator, \Countable
      *
      * @param Query                                      $query
      * @param array                                      $rows
-     * @param \Tinderbox\Clickhouse\Query\QueryStatistic $statistic
+     * @param \LaravelClickhouseEloquent\ClickhouseClient\Query\QueryStatistic $statistic
      */
     public function __construct(Query $query, array $rows, QueryStatistic $statistic)
     {
@@ -71,7 +71,7 @@ class Result implements \ArrayAccess, \Iterator, \Countable
     /**
      * Sets statistic.
      *
-     * @param \Tinderbox\Clickhouse\Query\QueryStatistic $statistic
+     * @param \LaravelClickhouseEloquent\ClickhouseClient\Query\QueryStatistic $statistic
      */
     protected function setStatistic(QueryStatistic $statistic)
     {
@@ -111,7 +111,7 @@ class Result implements \ArrayAccess, \Iterator, \Countable
     /**
      * Returns statistic.
      *
-     * @return \Tinderbox\Clickhouse\Query\QueryStatistic
+     * @return \LaravelClickhouseEloquent\ClickhouseClient\Query\QueryStatistic
      */
     public function getStatistic(): QueryStatistic
     {
@@ -123,7 +123,7 @@ class Result implements \ArrayAccess, \Iterator, \Countable
      *
      * @param string $name
      *
-     * @throws \Tinderbox\Clickhouse\Exceptions\ResultException
+     * @throws \LaravelClickhouseEloquent\ClickhouseClient\Exceptions\ResultException
      *
      * @return mixed
      */
