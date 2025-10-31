@@ -274,7 +274,7 @@ class JoinClause
      *
      * @return BaseBuilder
      */
-    public function subQuery(string $alias = null): BaseBuilder
+    public function subQuery(?string $alias = null): BaseBuilder
     {
         if ($alias) {
             $this->as($alias);

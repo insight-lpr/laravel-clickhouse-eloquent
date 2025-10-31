@@ -300,7 +300,7 @@ abstract class BaseBuilder
      *
      * @return static
      */
-    public function from($table, string $alias = null, bool $isFinal = null)
+    public function from($table, ?string $alias = null, ?bool $isFinal = null)
     {
         $this->from = new From($this);
 
@@ -356,7 +356,7 @@ abstract class BaseBuilder
      *
      * @return static
      */
-    public function table($table, string $alias = null, bool $isFinal = null)
+    public function table($table, ?string $alias = null, ?bool $isFinal = null)
     {
         return $this->from($table, $alias, $isFinal);
     }
@@ -495,9 +495,9 @@ abstract class BaseBuilder
      */
     public function join(
         $table,
-        string $strict = null,
-        string $type = null,
-        array $using = null,
+        ?string $strict = null,
+        ?string $type = null,
+        ?array $using = null,
         bool $global = false,
         ?string $alias = null
     ) {
@@ -571,7 +571,7 @@ abstract class BaseBuilder
      *
      * @return static
      */
-    public function leftJoin($table, string $strict = null, array $using = null, bool $global = false, ?string $alias = null)
+    public function leftJoin($table, ?string $strict = null, ?array $using = null, bool $global = false, ?string $alias = null)
     {
         return $this->join($table, $strict ?? JoinStrict::ALL->value, JoinType::LEFT->value, $using, $global, $alias);
     }
@@ -589,7 +589,7 @@ abstract class BaseBuilder
      *
      * @return static
      */
-    public function innerJoin($table, string $strict = null, array $using = null, bool $global = false, ?string $alias = null)
+    public function innerJoin($table, ?string $strict = null, ?array $using = null, bool $global = false, ?string $alias = null)
     {
         return $this->join($table, $strict ?? JoinStrict::ALL->value, JoinType::INNER->value, $using, $global, $alias);
     }
@@ -606,7 +606,7 @@ abstract class BaseBuilder
      *
      * @return static
      */
-    public function anyLeftJoin($table, array $using = null, bool $global = false, ?string $alias = null)
+    public function anyLeftJoin($table, ?array $using = null, bool $global = false, ?string $alias = null)
     {
         return $this->join($table, JoinStrict::ANY->value, JoinType::LEFT->value, $using, $global, $alias);
     }
@@ -623,7 +623,7 @@ abstract class BaseBuilder
      *
      * @return static
      */
-    public function allLeftJoin($table, array $using = null, bool $global = false, ?string $alias = null)
+    public function allLeftJoin($table, ?array $using = null, bool $global = false, ?string $alias = null)
     {
         return $this->join($table, JoinStrict::ALL->value, JoinType::LEFT->value, $using, $global, $alias);
     }
@@ -640,7 +640,7 @@ abstract class BaseBuilder
      *
      * @return static
      */
-    public function anyInnerJoin($table, array $using = null, bool $global = false, ?string $alias = null)
+    public function anyInnerJoin($table, ?array $using = null, bool $global = false, ?string $alias = null)
     {
         return $this->join($table, JoinStrict::ANY->value, JoinType::INNER->value, $using, $global, $alias);
     }
@@ -657,7 +657,7 @@ abstract class BaseBuilder
      *
      * @return static
      */
-    public function allInnerJoin($table, array $using = null, bool $global = false, ?string $alias = null)
+    public function allInnerJoin($table, ?array $using = null, bool $global = false, ?string $alias = null)
     {
         return $this->join($table, JoinStrict::ALL->value, JoinType::INNER->value, $using, $global, $alias);
     }
@@ -1555,7 +1555,7 @@ abstract class BaseBuilder
      *
      * @return static
      */
-    public function addSelectDict(string $dict, string $attribute, $key, string $as = null)
+    public function addSelectDict(string $dict, string $attribute, $key, ?string $as = null)
     {
         if (is_null($as)) {
             $as = $attribute;
@@ -1654,7 +1654,7 @@ abstract class BaseBuilder
      *
      * @return static
      */
-    public function limit(int $limit, int $offset = null)
+    public function limit(int $limit, ?int $offset = null)
     {
         $this->limit = new Limit($limit, $offset);
 
@@ -1686,7 +1686,7 @@ abstract class BaseBuilder
      *
      * @return static
      */
-    public function take(int $limit, int $offset = null)
+    public function take(int $limit, ?int $offset = null)
     {
         return $this->limit($limit, $offset);
     }
@@ -1745,7 +1745,7 @@ abstract class BaseBuilder
      *
      * @return static
      */
-    public function orderBy($column, string $direction = 'asc', string $collate = null)
+    public function orderBy($column, string $direction = 'asc', ?string $collate = null)
     {
         $column = $this->processColumns([$column], false)[0];
 
@@ -1779,7 +1779,7 @@ abstract class BaseBuilder
      *
      * @return static
      */
-    public function orderByAsc($column, string $collate = null)
+    public function orderByAsc($column, ?string $collate = null)
     {
         return $this->orderBy($column, OrderDirection::ASC->value, $collate);
     }
@@ -1792,7 +1792,7 @@ abstract class BaseBuilder
      *
      * @return static
      */
-    public function orderByDesc($column, string $collate = null)
+    public function orderByDesc($column, ?string $collate = null)
     {
         return $this->orderBy($column, OrderDirection::DESC->value, $collate);
     }

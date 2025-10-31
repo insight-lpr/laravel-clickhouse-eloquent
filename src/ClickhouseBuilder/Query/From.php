@@ -108,7 +108,7 @@ class From
      *
      * @return From
      */
-    public function remote(string $expression, string $database, string $table, string $user = null, string $password = null): self
+    public function remote(string $expression, string $database, string $table, ?string $user = null, ?string $password = null): self
     {
         $remote = "remote('{$expression}', {$database}, {$table}";
 

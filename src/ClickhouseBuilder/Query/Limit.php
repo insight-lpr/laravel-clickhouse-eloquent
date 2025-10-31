@@ -32,7 +32,7 @@ class Limit
      * @param int|null $offset
      * @param array    $by
      */
-    public function __construct(int $limit, int $offset = null, array $by = [])
+    public function __construct(int $limit, ?int $offset = null, array $by = [])
     {
         $this->limit = $limit;
         $this->offset = $offset;
