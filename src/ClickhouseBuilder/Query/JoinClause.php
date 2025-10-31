@@ -76,8 +76,6 @@ class JoinClause
 
     /**
      * JoinClause constructor.
-     *
-     * @param BaseBuilder $query
      */
     public function __construct(BaseBuilder $query)
     {
@@ -87,16 +85,14 @@ class JoinClause
     /**
      * Set table for join.
      *
-     * @param string|Expression $table
-     *
-     * @return JoinClause
+     * @param  string|Expression  $table
      */
     public function table($table): self
     {
         if (is_string($table)) {
-            list($table, $alias) = $this->decomposeJoinExpressionToTableAndAlias($table);
+            [$table, $alias] = $this->decomposeJoinExpressionToTableAndAlias($table);
 
-            if (!is_null($alias)) {
+            if (! is_null($alias)) {
                 $this->as($alias);
             }
 
@@ -113,9 +109,7 @@ class JoinClause
     /**
      * Set column to use for join rows.
      *
-     * @param array ...$columns
-     *
-     * @return JoinClause
+     * @param  array  ...$columns
      */
     public function using(...$columns): self
     {
@@ -127,12 +121,8 @@ class JoinClause
     /**
      * Set "on" clause for join.
      *
-     * @param string|Expression $first
-     * @param string            $operator
-     * @param string|Expression $second
-     * @param string            $concatOperator
-     *
-     * @return JoinClause
+     * @param  string|Expression  $first
+     * @param  string|Expression  $second
      */
     public function on($first, string $operator, $second, string $concatOperator = Operator::AND->value): self
     {
@@ -150,9 +140,7 @@ class JoinClause
     /**
      * Add column to using statement.
      *
-     * @param string|array $columns
-     *
-     * @return JoinClause
+     * @param  string|array  $columns
      */
     public function addUsing(...$columns): self
     {
@@ -163,10 +151,6 @@ class JoinClause
 
     /**
      * Set join strictness.
-     *
-     * @param string $strict
-     *
-     * @return JoinClause
      */
     public function strict(string $strict): self
     {
@@ -177,10 +161,6 @@ class JoinClause
 
     /**
      * Set join type.
-     *
-     * @param string $type
-     *
-     * @return JoinClause
      */
     public function type(string $type): self
     {
@@ -191,8 +171,6 @@ class JoinClause
 
     /**
      * Set ALL strictness.
-     *
-     * @return JoinClause
      */
     public function all(): self
     {
@@ -201,8 +179,6 @@ class JoinClause
 
     /**
      * Set ANY strictness.
-     *
-     * @return JoinClause
      */
     public function any(): self
     {
@@ -211,8 +187,6 @@ class JoinClause
 
     /**
      * Set INNER join type.
-     *
-     * @return JoinClause
      */
     public function inner(): self
     {
@@ -221,8 +195,6 @@ class JoinClause
 
     /**
      * Set LEFT join type.
-     *
-     * @return JoinClause
      */
     public function left(): self
     {
@@ -231,10 +203,6 @@ class JoinClause
 
     /**
      * Set GLOBAL option.
-     *
-     * @param bool $global
-     *
-     * @return JoinClause
      */
     public function distributed(bool $global = false): self
     {
@@ -246,8 +214,7 @@ class JoinClause
     /**
      * Set sub-query as table to select from.
      *
-     * @param Closure|BaseBuilder|null $query
-     *
+     * @param  Closure|BaseBuilder|null  $query
      * @return JoinClause|BaseBuilder
      */
     public function query($query = null)
@@ -269,10 +236,6 @@ class JoinClause
 
     /**
      * Get sub-query builder.
-     *
-     * @param string|null $alias
-     *
-     * @return BaseBuilder
      */
     public function subQuery(?string $alias = null): BaseBuilder
     {
@@ -286,7 +249,6 @@ class JoinClause
     /**
      * Set join alias.
      *
-     * @param string $alias
      *
      * @return $this
      */
@@ -299,8 +261,6 @@ class JoinClause
 
     /**
      * Get using columns.
-     *
-     * @return array|null
      */
     public function getUsing(): ?array
     {
@@ -309,8 +269,6 @@ class JoinClause
 
     /**
      * Get on clauses.
-     *
-     * @return array|null
      */
     public function getOnClauses(): ?array
     {
@@ -319,8 +277,6 @@ class JoinClause
 
     /**
      * Get flag to use or not to use GLOBAL option.
-     *
-     * @return bool
      */
     public function isDistributed(): bool
     {
@@ -329,8 +285,6 @@ class JoinClause
 
     /**
      * Get join strictness.
-     *
-     * @return JoinStrict|null
      */
     public function getStrict(): ?JoinStrict
     {
@@ -339,8 +293,6 @@ class JoinClause
 
     /**
      * Get join type.
-     *
-     * @return JoinType|null
      */
     public function getType(): ?JoinType
     {
@@ -349,8 +301,6 @@ class JoinClause
 
     /**
      * Get sub-query.
-     *
-     * @return BaseBuilder|null
      */
     public function getSubQuery(): ?BaseBuilder
     {
@@ -369,8 +319,6 @@ class JoinClause
 
     /**
      * Get alias.
-     *
-     * @return Identifier
      */
     public function getAlias(): ?Identifier
     {
@@ -379,10 +327,6 @@ class JoinClause
 
     /**
      * Converts strings to Identifier objects.
-     *
-     * @param array $array
-     *
-     * @return array
      */
     private function stringsToIdentifiers(array $array): array
     {
@@ -400,10 +344,6 @@ class JoinClause
 
     /**
      * Tries to decompose string join expression to table name and alias.
-     *
-     * @param string $table
-     *
-     * @return array
      */
     private function decomposeJoinExpressionToTableAndAlias(string $table): array
     {

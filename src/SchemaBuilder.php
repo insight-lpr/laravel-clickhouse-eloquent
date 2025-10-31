@@ -8,11 +8,11 @@ use Illuminate\Database\Schema\Builder as BaseBuilder;
 
 class SchemaBuilder extends BaseBuilder
 {
-    /** @inheritDoc */
+    /** {@inheritDoc} */
     public function hasTable($table): bool
     {
         return count($this->connection->select(
-                $this->grammar->compileTableExists(), [$this->connection->getDatabaseName(), $table]
-            )) > 0;
+            $this->grammar->compileTableExists(), [$this->connection->getDatabaseName(), $table]
+        )) > 0;
     }
 }

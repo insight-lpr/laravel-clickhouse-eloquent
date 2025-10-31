@@ -1,6 +1,7 @@
 <?php
 
-return new class extends \LaravelClickhouseEloquent\Migration {
+return new class extends \LaravelClickhouseEloquent\Migration
+{
     /**
      * Run the migrations.
      *
@@ -8,8 +9,8 @@ return new class extends \LaravelClickhouseEloquent\Migration {
      */
     public function up()
     {
-        static::write(
-            "
+        self::write(
+            '
             CREATE TABLE IF NOT EXISTS examples (
                 created_at DateTime64 DEFAULT now64(),
                 f_int Int64,
@@ -18,7 +19,7 @@ return new class extends \LaravelClickhouseEloquent\Migration {
             )
             ENGINE = MergeTree()
             ORDER BY (f_int)
-        "
+        '
         );
     }
 
@@ -29,6 +30,6 @@ return new class extends \LaravelClickhouseEloquent\Migration {
      */
     public function down()
     {
-        static::write('DROP TABLE examples');
+        self::write('DROP TABLE examples');
     }
 };

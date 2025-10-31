@@ -37,11 +37,6 @@ class Query
 
     /**
      * Query constructor.
-     *
-     * @param \LaravelClickhouseEloquent\ClickhouseClient\Server $server
-     * @param string                       $query
-     * @param array                        $files
-     * @param array                        $settings
      */
     public function __construct(Server $server, string $query, array $files = [], array $settings = [])
     {
@@ -53,8 +48,6 @@ class Query
 
     /**
      * Returns SQL query.
-     *
-     * @return string
      */
     public function getQuery(): string
     {
@@ -63,8 +56,6 @@ class Query
 
     /**
      * Returns files attached to query.
-     *
-     * @return array
      */
     public function getFiles(): array
     {
@@ -73,8 +64,6 @@ class Query
 
     /**
      * Returns server to process query.
-     *
-     * @return \LaravelClickhouseEloquent\ClickhouseClient\Server
      */
     public function getServer(): Server
     {
@@ -83,8 +72,6 @@ class Query
 
     /**
      * Returns settings.
-     *
-     * @return array
      */
     public function getSettings(): array
     {

@@ -27,10 +27,6 @@ class Limit
 
     /**
      * Limit constructor.
-     *
-     * @param int      $limit
-     * @param int|null $offset
-     * @param array    $by
      */
     public function __construct(int $limit, ?int $offset = null, array $by = [])
     {
@@ -41,8 +37,6 @@ class Limit
 
     /**
      * Get number of rows to take.
-     *
-     * @return int
      */
     public function getLimit(): ?int
     {
@@ -51,8 +45,6 @@ class Limit
 
     /**
      * Get number of rows to skip.
-     *
-     * @return int
      */
     public function getOffset(): ?int
     {
@@ -61,8 +53,6 @@ class Limit
 
     /**
      * Get columns to limit distinctly.
-     *
-     * @return array
      */
     public function getBy(): array
     {

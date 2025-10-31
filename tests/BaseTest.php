@@ -9,21 +9,21 @@ use Tests\Models\Example;
 
 class BaseTest extends TestCase
 {
-    public function testWorkWithClient()
+    public function test_work_with_client()
     {
         Artisan::call('migrate');
         /** @var \ClickHouseDB\Client $db */
         $db = DB::connection('clickhouse')->getClient();
-        $db->write("TRUNCATE TABLE examples");
+        $db->write('TRUNCATE TABLE examples');
         $db->insert('examples', [[100, 'string']], ['f_int', 'f_string']);
         $db->write("ALTER TABLE examples UPDATE f_string='updated string' WHERE f_int=100");
         usleep(1e4);
-        $rows = $db->select("SELECT * FROM examples LIMIT 1")->rows();
+        $rows = $db->select('SELECT * FROM examples LIMIT 1')->rows();
         $this->assertEquals(100, $rows[0]['f_int']);
         $this->assertEquals('updated string', $rows[0]['f_string']);
     }
 
-    public function testSimpleModelInsertAndSelect()
+    public function test_simple_model_insert_and_select()
     {
         Example::truncate();
         Example::insertAssoc([['f_int' => 1, 'f_string' => 'zz']]);
@@ -32,7 +32,7 @@ class BaseTest extends TestCase
         $this->assertEquals('zz', $rows[0]['f_string']);
     }
 
-    public function testMultipleWheres()
+    public function test_multiple_wheres()
     {
         Example::truncate();
         Example::insertAssoc([['f_int' => 1, 'f_string' => 'zz']]);
@@ -44,34 +44,34 @@ class BaseTest extends TestCase
         $this->assertNotEmpty($rows);
     }
 
-    public function testPretendMigration()
+    public function test_pretend_migration()
     {
         /** @var \ClickHouseDB\Client $db */
         $db = DB::connection('clickhouse')->getClient();
         $migration = file_get_contents(base_path('database/migrations/2022_01_01_000000_example.php'));
 
         // Default mode
-        $tableName = 'examples_' . rand(0, 9999999999999999);
+        $tableName = 'examples_'.rand(0, 9999999999999999);
         $migrationTmp = str_replace('examples', $tableName, $migration);
-        file_put_contents(base_path('database/migrations/example_' . rand(0, 9999999999999999) . '.php'), $migrationTmp);
+        file_put_contents(base_path('database/migrations/example_'.rand(0, 9999999999999999).'.php'), $migrationTmp);
         Artisan::call('migrate');
         $exist = $db->select("EXISTS $tableName")->fetchOne('result');
         $this->assertEquals(1, $exist);
 
         // Pretend mode
-        $tableName = 'examples_' . rand(0, 9999999999999999);
+        $tableName = 'examples_'.rand(0, 9999999999999999);
         $migrationTmp = str_replace('examples', $tableName, $migration);
-        file_put_contents(base_path('database/migrations/example_' . rand(0, 9999999999999999) . '.php'), $migrationTmp);
+        file_put_contents(base_path('database/migrations/example_'.rand(0, 9999999999999999).'.php'), $migrationTmp);
         Artisan::call('migrate', ['--pretend' => true]);
         $exist = $db->select("EXISTS $tableName")->fetchOne('result');
         $this->assertEquals(0, $exist);
     }
 
-    public function testOrWhere()
+    public function test_or_where()
     {
         $query = Example::select()->where(function (Builder $q) {
             $q->where('f_int', 1)->orWhere('f_int', 2);
         });
-        $this->assertEquals("SELECT * FROM `examples` WHERE (`f_int` = 1 OR `f_int` = 2)", $query->toSql());
+        $this->assertEquals('SELECT * FROM `examples` WHERE (`f_int` = 1 OR `f_int` = 2)', $query->toSql());
     }
 }

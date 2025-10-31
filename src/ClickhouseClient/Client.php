@@ -44,13 +44,10 @@ class Client
 
     /**
      * Client constructor.
-     *
-     * @param \LaravelClickhouseEloquent\ClickhouseClient\ServerProvider                     $serverProvider
-     * @param \LaravelClickhouseEloquent\ClickhouseClient\Interfaces\TransportInterface|null $transport
      */
     public function __construct(
         ServerProvider $serverProvider,
-        TransportInterface $transport = null,
+        ?TransportInterface $transport = null,
     ) {
         $this->serverProvider = $serverProvider;
         $this->setTransport($transport);
@@ -63,15 +60,13 @@ class Client
      */
     protected function createTransport()
     {
-        return new HttpTransport();
+        return new HttpTransport;
     }
 
     /**
      * Sets transport.
-     *
-     * @param \LaravelClickhouseEloquent\ClickhouseClient\Interfaces\TransportInterface|null $transport
      */
-    protected function setTransport(TransportInterface $transport = null)
+    protected function setTransport(?TransportInterface $transport = null)
     {
         if (is_null($transport)) {
             $this->transport = $this->createTransport();
@@ -82,8 +77,6 @@ class Client
 
     /**
      * Returns transport.
-     *
-     * @return TransportInterface
      */
     protected function getTransport(): TransportInterface
     {
@@ -93,7 +86,6 @@ class Client
     /**
      * Client will use servers from specified cluster.
      *
-     * @param string|null $cluster
      *
      * @return $this
      */
@@ -107,8 +99,6 @@ class Client
 
     /**
      * Returns current cluster name.
-     *
-     * @return null|string
      */
     protected function getClusterName(): ?string
     {
@@ -118,7 +108,6 @@ class Client
     /**
      * Client will use specified server.
      *
-     * @param string $serverHostname
      *
      * @return $this
      */
@@ -174,18 +163,14 @@ class Client
 
     /**
      * Returns true if cluster selected.
-     *
-     * @return bool
      */
     protected function isOnCluster(): bool
     {
-        return !is_null($this->getClusterName());
+        return ! is_null($this->getClusterName());
     }
 
     /**
      * Returns server to perform request.
-     *
-     * @return Server
      */
     public function getServer(): Server
     {
@@ -232,11 +217,7 @@ class Client
      *
      * $client->select('select * from table where column = ?', [1]);
      *
-     * @param string          $query
-     * @param FileInterface[] $files
-     * @param array           $settings
-     *
-     * @return \LaravelClickhouseEloquent\ClickhouseClient\Query\Result
+     * @param  FileInterface[]  $files
      */
     public function readOne(
         string $query,
@@ -258,15 +239,12 @@ class Client
     /**
      * Performs batch of select queries.
      *
-     * @param array $queries
-     * @param int   $concurrency Max concurrency requests
-     *
-     * @return array
+     * @param  int  $concurrency  Max concurrency requests
      */
     public function read(array $queries, int $concurrency = 5): array
     {
         foreach ($queries as $i => $query) {
-            if (!$query instanceof Query) {
+            if (! $query instanceof Query) {
                 $queries[$i] = $this->guessQuery($query);
             }
         }
@@ -276,19 +254,13 @@ class Client
 
     /**
      * Performs insert or simple statement query.
-     *
-     * @param string $query
-     * @param array  $files
-     * @param array  $settings
-     *
-     * @return bool
      */
     public function writeOne(
         string $query,
         array $files = [],
         array $settings = [],
     ): bool {
-        if (!$query instanceof Query) {
+        if (! $query instanceof Query) {
             $query = $this->createQuery(
                 $this->getServer(),
                 $query,
@@ -304,16 +276,11 @@ class Client
 
     /**
      * Performs batch of insert or simple statement queries.
-     *
-     * @param array $queries
-     * @param int   $concurrency
-     *
-     * @return array
      */
     public function write(array $queries, int $concurrency = 5): array
     {
         foreach ($queries as $i => $query) {
-            if (!$query instanceof Query) {
+            if (! $query instanceof Query) {
                 $queries[$i] = $this->guessQuery($query);
             }
         }
@@ -324,13 +291,8 @@ class Client
     /**
      * Performs async insert queries using local csv or tsv files.
      *
-     * @param string      $table
-     * @param array       $columns
-     * @param array       $files
-     * @param string|null $format
-     * @param array       $settings
-     * @param int         $concurrency Max concurrency requests
-     *
+     * @param  string|null  $format
+     * @param  int  $concurrency  Max concurrency requests
      * @return array
      */
     public function writeFiles(
@@ -342,15 +304,15 @@ class Client
         int $concurrency = 5,
     ) {
         $sql =
-            "INSERT INTO " .
-            $table .
-            " (" .
-            implode(", ", $columns) .
-            ") FORMAT " .
+            'INSERT INTO '.
+            $table.
+            ' ('.
+            implode(', ', $columns).
+            ') FORMAT '.
             strtoupper($format);
 
         foreach ($files as $i => $file) {
-            if (!$file instanceof FileInterface) {
+            if (! $file instanceof FileInterface) {
                 $files[$i] = new File($file);
             }
         }
@@ -367,13 +329,6 @@ class Client
 
     /**
      * Creates query instance from specified arguments.
-     *
-     * @param \LaravelClickhouseEloquent\ClickhouseClient\Server $server
-     * @param string                       $sql
-     * @param array                        $files
-     * @param array                        $settings
-     *
-     * @return \LaravelClickhouseEloquent\ClickhouseClient\Query
      */
     protected function createQuery(
         Server $server,
@@ -386,17 +341,13 @@ class Client
 
     /**
      * Parses query array and returns query instance.
-     *
-     * @param array $query
-     *
-     * @return \LaravelClickhouseEloquent\ClickhouseClient\Query
      */
     protected function guessQuery(array $query): Query
     {
-        $server = $query["server"] ?? $this->getServer();
-        $sql = $query["query"];
-        $tables = $query["files"] ?? [];
-        $settings = $query["settings"] ?? [];
+        $server = $query['server'] ?? $this->getServer();
+        $sql = $query['query'];
+        $tables = $query['files'] ?? [];
+        $settings = $query['settings'] ?? [];
 
         return $this->createQuery($server, $sql, $tables, $settings);
     }

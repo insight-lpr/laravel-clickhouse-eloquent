@@ -7,7 +7,6 @@ use GuzzleHttp\Exception\RequestException;
 use GuzzleHttp\Pool;
 use GuzzleHttp\Psr7\MultipartStream;
 use GuzzleHttp\Psr7\Request;
-use Psr\Http\Message\ResponseInterface;
 use LaravelClickhouseEloquent\ClickhouseClient\Common\TempTable;
 use LaravelClickhouseEloquent\ClickhouseClient\Exceptions\TransportException;
 use LaravelClickhouseEloquent\ClickhouseClient\Interfaces\FileInterface;
@@ -16,6 +15,7 @@ use LaravelClickhouseEloquent\ClickhouseClient\Query;
 use LaravelClickhouseEloquent\ClickhouseClient\Query\QueryStatistic;
 use LaravelClickhouseEloquent\ClickhouseClient\Query\Result;
 use LaravelClickhouseEloquent\ClickhouseClient\Server;
+use Psr\Http\Message\ResponseInterface;
 
 /**
  * Http transport to perform queries.
@@ -50,11 +50,8 @@ class HttpTransport implements TransportInterface
 
     /**
      * HttpTransport constructor.
-     *
-     * @param Client $client
-     * @param array  $options
      */
-    public function __construct(Client $client = null, array $options = [])
+    public function __construct(?Client $client = null, array $options = [])
     {
         $this->setClient($client);
 
@@ -63,8 +60,6 @@ class HttpTransport implements TransportInterface
 
     /**
      * Returns flag to enable / disable queries and data compression.
-     *
-     * @return bool
      */
     protected function isDeflateEnabled(): bool
     {
@@ -79,7 +74,7 @@ class HttpTransport implements TransportInterface
     protected function getHeaders()
     {
         $headers = [
-            'Accept-Encoding'  => 'gzip',
+            'Accept-Encoding' => 'gzip',
         ];
 
         if ($this->isDeflateEnabled()) {
@@ -91,10 +86,8 @@ class HttpTransport implements TransportInterface
 
     /**
      * Sets Guzzle client.
-     *
-     * @param Client|null $client
      */
-    protected function setClient(Client $client = null)
+    protected function setClient(?Client $client = null)
     {
         if (is_null($client)) {
             $this->httpClient = $this->createHttpClient();
@@ -108,18 +101,14 @@ class HttpTransport implements TransportInterface
      */
     protected function createHttpClient()
     {
-        return new Client();
+        return new Client;
     }
 
     /**
      * Executes write queries.
      *
-     * @param array $queries
-     * @param int   $concurrency
      *
      * @throws \Throwable
-     *
-     * @return array
      */
     public function write(array $queries, int $concurrency = 5): array
     {
@@ -128,7 +117,7 @@ class HttpTransport implements TransportInterface
 
         foreach ($queries as $query) {
             $requests = function (Query $query) use (&$openedStreams) {
-                if (!empty($query->getFiles())) {
+                if (! empty($query->getFiles())) {
                     foreach ($query->getFiles() as $file) {
                         /* @var FileInterface $file */
                         $headers = $this->getHeaders();
@@ -163,11 +152,11 @@ class HttpTransport implements TransportInterface
                 $requests($query),
                 [
                     'concurrency' => $concurrency,
-                    'fulfilled'   => function ($response, $index) use (&$queryResult) {
+                    'fulfilled' => function ($response, $index) use (&$queryResult) {
                         $queryResult[$index] = true;
                     },
                     'rejected' => $this->parseReason($query),
-                    'options'  => array_merge([
+                    'options' => array_merge([
                         'expect' => false,
                     ], $this->options['write'] ?? []),
                 ]
@@ -211,7 +200,7 @@ class HttpTransport implements TransportInterface
 
                 $multipart = [
                     [
-                        'name'     => 'query',
+                        'name' => 'query',
                         'contents' => $query->getQuery().' FORMAT JSON',
                     ],
                 ];
@@ -224,7 +213,7 @@ class HttpTransport implements TransportInterface
                     $openedStreams[] = $stream;
 
                     $multipart[] = [
-                        'name'     => $file->getName(),
+                        'name' => $file->getName(),
                         'contents' => $stream,
                         'filename' => $file->getName(),
                     ];
@@ -247,7 +236,7 @@ class HttpTransport implements TransportInterface
             $requests($queries),
             [
                 'concurrency' => $concurrency,
-                'fulfilled'   => function ($response, $index) use (&$result, $queries) {
+                'fulfilled' => function ($response, $index) use (&$result, $queries) {
                     $result[$index] = $this->assembleResult($queries[$index], $response);
                 },
                 'rejected' => function ($response, $index) use ($queries) {
@@ -285,24 +274,22 @@ class HttpTransport implements TransportInterface
     /**
      * Parse temp table data to append it to request.
      *
-     * @param \LaravelClickhouseEloquent\ClickhouseClient\Common\TempTable $table
      *
      * @return array
      */
     protected function getTempTableQueryParams(TempTable $table)
     {
-        list($structure, $withColumns) = $this->assembleTempTableStructure($table);
+        [$structure, $withColumns] = $this->assembleTempTableStructure($table);
 
         return [
             $table->getName().'_'.($withColumns ? 'structure' : 'types') => $structure,
-            $table->getName().'_format'                                  => $table->getFormat(),
+            $table->getName().'_format' => $table->getFormat(),
         ];
     }
 
     /**
      * Assembles string from TempTable structure.
      *
-     * @param \LaravelClickhouseEloquent\ClickhouseClient\Common\TempTable $table
      *
      * @return string
      */
@@ -328,7 +315,6 @@ class HttpTransport implements TransportInterface
     /**
      * Determines the reason why request was rejected.
      *
-     * @param Query $query
      *
      * @return \Closure
      */
@@ -351,11 +337,6 @@ class HttpTransport implements TransportInterface
 
     /**
      * Assembles Result instance from server response.
-     *
-     * @param Query                               $query
-     * @param \Psr\Http\Message\ResponseInterface $response
-     *
-     * @return \LaravelClickhouseEloquent\ClickhouseClient\Query\Result
      */
     protected function assembleResult(Query $query, ResponseInterface $response): Result
     {
@@ -379,26 +360,20 @@ class HttpTransport implements TransportInterface
 
     /**
      * Builds uri with necessary params.
-     *
-     * @param \LaravelClickhouseEloquent\ClickhouseClient\Server $server
-     * @param array                        $query
-     * @param array                        $settings
-     *
-     * @return string
      */
     protected function buildRequestUri(Server $server, array $query = [], array $settings = []): string
     {
         $uri = $server->getOptions()->getProtocol().'://'.$server->getHost().':'.$server->getPort();
 
-        if (!is_null($server->getDatabase())) {
+        if (! is_null($server->getDatabase())) {
             $query['database'] = $server->getDatabase();
         }
 
-        if (!is_null($server->getUsername())) {
+        if (! is_null($server->getUsername())) {
             $query['user'] = $server->getUsername();
         }
 
-        if (!is_null($server->getPassword())) {
+        if (! is_null($server->getPassword())) {
             $query['password'] = $server->getPassword();
         }
 

@@ -10,8 +10,7 @@ abstract class Sanitizer
     /**
      * Escapes value.
      *
-     * @param mixed $value
-     *
+     * @param  mixed  $value
      * @return mixed
      */
     public static function escape($value)

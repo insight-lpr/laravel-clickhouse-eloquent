@@ -53,13 +53,6 @@ class Server
 
     /**
      * Server constructor.
-     *
-     * @param string                                          $host
-     * @param string                                          $port
-     * @param string                                          $database
-     * @param string|null                                     $username
-     * @param string|null                                     $password
-     * @param \LaravelClickhouseEloquent\ClickhouseClient\Common\ServerOptions|null $options
      */
     public function __construct(
         string $host,
@@ -67,7 +60,7 @@ class Server
         ?string $database = 'default',
         ?string $username = null,
         ?string $password = null,
-        ServerOptions $options = null
+        ?ServerOptions $options = null
     ) {
         $this->setHost($host);
         $this->setPort($port);
@@ -79,10 +72,6 @@ class Server
 
     /**
      * Sets host.
-     *
-     * @param string $host
-     *
-     * @return \LaravelClickhouseEloquent\ClickhouseClient\Server
      */
     public function setHost(string $host): self
     {
@@ -93,8 +82,6 @@ class Server
 
     /**
      * Returns host.
-     *
-     * @return string
      */
     public function getHost(): string
     {
@@ -103,10 +90,6 @@ class Server
 
     /**
      * Sets port.
-     *
-     * @param string $port
-     *
-     * @return \LaravelClickhouseEloquent\ClickhouseClient\Server
      */
     public function setPort(string $port): self
     {
@@ -117,8 +100,6 @@ class Server
 
     /**
      * Returns port.
-     *
-     * @return string
      */
     public function getPort(): string
     {
@@ -127,12 +108,8 @@ class Server
 
     /**
      * Sets database.
-     *
-     * @param string|null $database
-     *
-     * @return \LaravelClickhouseEloquent\ClickhouseClient\Server
      */
-    public function setDatabase(string $database = null): self
+    public function setDatabase(?string $database = null): self
     {
         $this->database = $database;
 
@@ -141,8 +118,6 @@ class Server
 
     /**
      * Returns database.
-     *
-     * @return null|string
      */
     public function getDatabase(): ?string
     {
@@ -151,12 +126,8 @@ class Server
 
     /**
      * Sets username.
-     *
-     * @param string|null $username
-     *
-     * @return \LaravelClickhouseEloquent\ClickhouseClient\Server
      */
-    public function setUsername(string $username = null): self
+    public function setUsername(?string $username = null): self
     {
         $this->username = $username;
 
@@ -165,8 +136,6 @@ class Server
 
     /**
      * Returns username.
-     *
-     * @return null|string
      */
     public function getUsername(): ?string
     {
@@ -175,12 +144,8 @@ class Server
 
     /**
      * Sets password.
-     *
-     * @param string|null $password
-     *
-     * @return \LaravelClickhouseEloquent\ClickhouseClient\Server
      */
-    public function setPassword(string $password = null): self
+    public function setPassword(?string $password = null): self
     {
         $this->password = $password;
 
@@ -189,8 +154,6 @@ class Server
 
     /**
      * Returns password.
-     *
-     * @return null|string
      */
     public function getPassword(): ?string
     {
@@ -201,12 +164,8 @@ class Server
      * Sets options.
      *
      * If no options provided, will use default options
-     *
-     * @param \LaravelClickhouseEloquent\ClickhouseClient\Common\ServerOptions|null $options
-     *
-     * @return \LaravelClickhouseEloquent\ClickhouseClient\Server
      */
-    public function setOptions(ServerOptions $options = null): self
+    public function setOptions(?ServerOptions $options = null): self
     {
         if (is_null($options)) {
             return $this->setDefaultOptions();
@@ -219,20 +178,16 @@ class Server
 
     /**
      * Sets default options.
-     *
-     * @return \LaravelClickhouseEloquent\ClickhouseClient\Server
      */
     protected function setDefaultOptions(): self
     {
-        $this->options = new ServerOptions();
+        $this->options = new ServerOptions;
 
         return $this;
     }
 
     /**
      * Returns options.
-     *
-     * @return \LaravelClickhouseEloquent\ClickhouseClient\Common\ServerOptions
      */
     public function getOptions(): ServerOptions
     {

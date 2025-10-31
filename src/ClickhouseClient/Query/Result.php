@@ -10,11 +10,11 @@ use LaravelClickhouseEloquent\ClickhouseClient\Query;
  *
  * Container for request results and statistic
  *
- * @property Query          $query
- * @property array          $rows
+ * @property Query $query
+ * @property array $rows
  * @property QueryStatistic $statistic
  */
-class Result implements \ArrayAccess, \Iterator, \Countable
+class Result implements \ArrayAccess, \Countable, \Iterator
 {
     /**
      * Query execution statistic.
@@ -46,10 +46,6 @@ class Result implements \ArrayAccess, \Iterator, \Countable
 
     /**
      * Result constructor.
-     *
-     * @param Query                                      $query
-     * @param array                                      $rows
-     * @param \LaravelClickhouseEloquent\ClickhouseClient\Query\QueryStatistic $statistic
      */
     public function __construct(Query $query, array $rows, QueryStatistic $statistic)
     {
@@ -60,8 +56,6 @@ class Result implements \ArrayAccess, \Iterator, \Countable
 
     /**
      * Sets query.
-     *
-     * @param Query $query
      */
     protected function setQuery(Query $query)
     {
@@ -70,8 +64,6 @@ class Result implements \ArrayAccess, \Iterator, \Countable
 
     /**
      * Sets statistic.
-     *
-     * @param \LaravelClickhouseEloquent\ClickhouseClient\Query\QueryStatistic $statistic
      */
     protected function setStatistic(QueryStatistic $statistic)
     {
@@ -80,8 +72,6 @@ class Result implements \ArrayAccess, \Iterator, \Countable
 
     /**
      * Sets rows.
-     *
-     * @param array $rows
      */
     protected function setRows(array $rows)
     {
@@ -90,8 +80,6 @@ class Result implements \ArrayAccess, \Iterator, \Countable
 
     /**
      * Returns rows.
-     *
-     * @return array
      */
     public function getRows(): array
     {
@@ -100,8 +88,6 @@ class Result implements \ArrayAccess, \Iterator, \Countable
 
     /**
      * Returns query.
-     *
-     * @return Query
      */
     public function getQuery(): Query
     {
@@ -110,8 +96,6 @@ class Result implements \ArrayAccess, \Iterator, \Countable
 
     /**
      * Returns statistic.
-     *
-     * @return \LaravelClickhouseEloquent\ClickhouseClient\Query\QueryStatistic
      */
     public function getStatistic(): QueryStatistic
     {
@@ -121,11 +105,10 @@ class Result implements \ArrayAccess, \Iterator, \Countable
     /**
      * Getter to simplify access to rows and statistic.
      *
-     * @param string $name
+     * @param  string  $name
+     * @return mixed
      *
      * @throws \LaravelClickhouseEloquent\ClickhouseClient\Exceptions\ResultException
-     *
-     * @return mixed
      */
     public function __get($name)
     {

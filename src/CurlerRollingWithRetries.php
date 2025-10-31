@@ -14,29 +14,23 @@ class CurlerRollingWithRetries extends CurlerRolling
      */
     protected $retries = 0;
 
-    /** @inheritDoc */
+    /** {@inheritDoc} */
     public function execOne(CurlerRequest $request, $auto_close = false)
     {
         $attempts = 1 + max(0, $this->retries);
         $httpCode = 0;
-        while ($attempts-- && 200 !== $httpCode) {
+        while ($attempts-- && $httpCode !== 200) {
             $httpCode = parent::execOne($request, $auto_close);
         }
 
         return $httpCode;
     }
 
-    /**
-     * @return int
-     */
     public function getRetries(): int
     {
         return $this->retries;
     }
 
-    /**
-     * @param int $retries
-     */
     public function setRetries(int $retries): void
     {
         $this->retries = $retries;

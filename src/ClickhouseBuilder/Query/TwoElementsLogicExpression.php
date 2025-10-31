@@ -47,8 +47,6 @@ class TwoElementsLogicExpression
 
     /**
      * TwoElementsLogicExpression constructor.
-     *
-     * @param BaseBuilder $query
      */
     public function __construct(BaseBuilder $query)
     {
@@ -58,8 +56,7 @@ class TwoElementsLogicExpression
     /**
      * Set first element.
      *
-     * @param mixed $element
-     *
+     * @param  mixed  $element
      * @return $this
      */
     public function firstElement($element)
@@ -72,7 +69,6 @@ class TwoElementsLogicExpression
     /**
      * Operator between two elements.
      *
-     * @param string $operator
      *
      * @return $this
      */
@@ -86,8 +82,7 @@ class TwoElementsLogicExpression
     /**
      * Set second element.
      *
-     * @param mixed $element
-     *
+     * @param  mixed  $element
      * @return $this
      */
     public function secondElement($element)
@@ -100,7 +95,6 @@ class TwoElementsLogicExpression
     /**
      * Set concatenate operator.
      *
-     * @param string $operator
      *
      * @return $this
      */
@@ -114,9 +108,7 @@ class TwoElementsLogicExpression
     /**
      * Build query string for first element.
      *
-     * @param \Closure|Builder $query
-     *
-     * @return TwoElementsLogicExpression
+     * @param  \Closure|Builder  $query
      */
     public function firstElementQuery($query): self
     {
@@ -133,10 +125,6 @@ class TwoElementsLogicExpression
 
     /**
      * Build query string for second element.
-     *
-     * @param $query
-     *
-     * @return TwoElementsLogicExpression
      */
     public function secondElementQuery($query): self
     {

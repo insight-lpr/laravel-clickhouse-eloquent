@@ -3,9 +3,9 @@
 namespace LaravelClickhouseEloquent\ClickhouseClient\Common;
 
 use GuzzleHttp\Psr7\Stream;
-use Psr\Http\Message\StreamInterface;
 use LaravelClickhouseEloquent\ClickhouseClient\Interfaces\FileInterface;
 use LaravelClickhouseEloquent\ClickhouseClient\Support\CcatStream;
+use Psr\Http\Message\StreamInterface;
 
 class MergedFiles extends File implements FileInterface
 {

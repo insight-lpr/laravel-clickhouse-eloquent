@@ -23,10 +23,6 @@ class ServerOptions
 
     /**
      * Sets protocol.
-     *
-     * @param string $protocol
-     *
-     * @return ServerOptions
      */
     public function setProtocol(string $protocol): self
     {
@@ -37,8 +33,6 @@ class ServerOptions
 
     /**
      * Returns protocol.
-     *
-     * @return string
      */
     public function getProtocol(): string
     {
@@ -47,10 +41,6 @@ class ServerOptions
 
     /**
      * Set tags.
-     *
-     * @param array $tags
-     *
-     * @return ServerOptions
      */
     public function setTags(array $tags): self
     {
@@ -65,10 +55,6 @@ class ServerOptions
 
     /**
      * Adds tag.
-     *
-     * @param string $tag
-     *
-     * @return ServerOptions
      */
     public function addTag(string $tag): self
     {
@@ -79,8 +65,6 @@ class ServerOptions
 
     /**
      * Returns tags.
-     *
-     * @return array
      */
     public function getTags(): array
     {

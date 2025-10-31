@@ -11,7 +11,7 @@ class QueryGrammar extends Grammar
 {
     public const PARAMETER_SIGN = '#@?';
 
-    /** @inheritDoc */
+    /** {@inheritDoc} */
     public function parameterize(array $values): string
     {
         $params = [];
@@ -22,13 +22,13 @@ class QueryGrammar extends Grammar
         return implode(', ', $params);
     }
 
-    /** @inheritDoc */
+    /** {@inheritDoc} */
     public function parameter($value)
     {
         return $this->isExpression($value) ? $this->getValue($value) : self::PARAMETER_SIGN;
     }
 
-    /** @inheritDoc */
+    /** {@inheritDoc} */
     public function compileWheres(Builder $query): string
     {
         return static::prepareParameters(parent::compileWheres($query));
@@ -36,8 +36,6 @@ class QueryGrammar extends Grammar
 
     /**
      * Second part of trick to change signs "?" to ":0", ":1" and so on
-     * @param string $sql
-     * @return string
      */
     public static function prepareParameters(string $sql): string
     {
@@ -50,7 +48,7 @@ class QueryGrammar extends Grammar
         return $sql;
     }
 
-    /** @inheritDoc */
+    /** {@inheritDoc} */
     protected function compileDeleteWithoutJoins(Builder $query, $table, $where): string
     {
         return "alter table {$table} delete {$where}";

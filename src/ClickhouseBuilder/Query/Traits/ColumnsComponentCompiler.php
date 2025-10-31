@@ -12,10 +12,7 @@ trait ColumnsComponentCompiler
     /**
      * Compiles columns for select statement.
      *
-     * @param BaseBuilder $builder
-     * @param Column[]    $columns
-     *
-     * @return string
+     * @param  Column[]  $columns
      */
     private function compileColumnsComponent(BaseBuilder $builder, array $columns): string
     {

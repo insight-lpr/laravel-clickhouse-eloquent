@@ -10,10 +10,7 @@ trait PreWheresComponentCompiler
     /**
      * Compiles prewhere to string to pass this string in query.
      *
-     * @param Builder                      $builder
-     * @param TwoElementsLogicExpression[] $preWheres
-     *
-     * @return string
+     * @param  TwoElementsLogicExpression[]  $preWheres
      */
     public function compilePrewheresComponent(Builder $builder, array $preWheres): string
     {

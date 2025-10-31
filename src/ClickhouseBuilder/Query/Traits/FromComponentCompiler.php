@@ -10,11 +10,6 @@ trait FromComponentCompiler
 {
     /**
      * Compiles format statement.
-     *
-     * @param BaseBuilder $builder
-     * @param             $from
-     *
-     * @return string
      */
     public function compileFromComponent(BaseBuilder $builder, From $from): string
     {
@@ -27,11 +22,11 @@ trait FromComponentCompiler
         $fromSection = '';
         $fromSection .= "FROM {$this->wrap($table)}";
 
-        if (!is_null($alias)) {
+        if (! is_null($alias)) {
             $fromSection .= " AS {$this->wrap($alias)}";
         }
 
-        if (!is_null($final)) {
+        if (! is_null($final)) {
             $fromSection .= ' FINAL';
         }
 
@@ -41,7 +36,6 @@ trait FromComponentCompiler
     /**
      * Verifies from.
      *
-     * @param From $from
      *
      * @throws GrammarException
      */

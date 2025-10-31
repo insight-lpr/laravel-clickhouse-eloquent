@@ -14,9 +14,7 @@ trait TwoElementsLogicExpressionsCompiler
      *
      * Used in prewhere, where and having statements
      *
-     * @param TwoElementsLogicExpression[] $wheres
-     *
-     * @return string
+     * @param  TwoElementsLogicExpression[]  $wheres
      */
     private function compileTwoElementLogicExpressions(array $wheres): string
     {
@@ -28,7 +26,7 @@ trait TwoElementsLogicExpressionsCompiler
             $operator = $where->getOperator();
             $concat = $where->getConcatenationOperator();
 
-            if (!empty($result)) {
+            if (! empty($result)) {
                 $result[] = $concat;
             }
 
@@ -48,7 +46,7 @@ trait TwoElementsLogicExpressionsCompiler
             } else {
                 $result[] = $this->compileElement($firstElement);
 
-                if (!is_null($operator)) {
+                if (! is_null($operator)) {
                     $result[] = $operator;
                 }
 
@@ -64,8 +62,7 @@ trait TwoElementsLogicExpressionsCompiler
     /**
      * Compiles one element in TwoElementsLogicExpression.
      *
-     * @param mixed $element
-     *
+     * @param  mixed  $element
      * @return string|int
      */
     private function compileElement($element)
@@ -80,7 +77,7 @@ trait TwoElementsLogicExpressionsCompiler
             $result[] = "({$this->compileTuple($element)})";
         } elseif ($element instanceof Column) {
             $result[] = $this->compileColumn($element);
-        } elseif (!is_null($element)) {
+        } elseif (! is_null($element)) {
             $result[] = $this->wrap($element);
         }
 

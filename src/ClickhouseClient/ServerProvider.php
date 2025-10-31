@@ -83,7 +83,7 @@ class ServerProvider
 
     public function getRandomServerWithTag(string $tag): Server
     {
-        if (!isset($this->serversByTags[$tag])) {
+        if (! isset($this->serversByTags[$tag])) {
             throw ServerProviderException::serverTagNotFound($tag);
         }
 
@@ -116,7 +116,7 @@ class ServerProvider
 
     public function getServer(string $serverHostname): Server
     {
-        if (!isset($this->servers[$serverHostname])) {
+        if (! isset($this->servers[$serverHostname])) {
             throw ServerProviderException::serverHostnameNotFound($serverHostname);
         }
 
@@ -125,7 +125,7 @@ class ServerProvider
 
     public function getCluster(string $cluster): Cluster
     {
-        if (!isset($this->clusters[$cluster])) {
+        if (! isset($this->clusters[$cluster])) {
             throw ServerProviderException::clusterNotFound($cluster);
         }
 

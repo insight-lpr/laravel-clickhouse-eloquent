@@ -2,8 +2,8 @@
 
 namespace LaravelClickhouseEloquent\ClickhouseClient\Common;
 
-use Psr\Http\Message\StreamInterface;
 use LaravelClickhouseEloquent\ClickhouseClient\Interfaces\FileInterface;
+use Psr\Http\Message\StreamInterface;
 
 /**
  * Temporary table for select requests which receives data from local file.
@@ -41,10 +41,7 @@ class TempTable implements FileInterface
     /**
      * TempTable constructor.
      *
-     * @param string               $name
-     * @param string|FileInterface $source
-     * @param array                $structure
-     * @param string               $format
+     * @param  string|FileInterface  $source
      */
     public function __construct(string $name, $source, array $structure, string $format = Format::CSV)
     {
@@ -66,8 +63,6 @@ class TempTable implements FileInterface
 
     /**
      * Returns table name.
-     *
-     * @return string
      */
     public function getName(): string
     {
@@ -76,8 +71,6 @@ class TempTable implements FileInterface
 
     /**
      * Returns table structure.
-     *
-     * @return array
      */
     public function getStructure(): array
     {
@@ -86,8 +79,6 @@ class TempTable implements FileInterface
 
     /**
      * Returns format.
-     *
-     * @return string
      */
     public function getFormat(): string
     {

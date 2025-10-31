@@ -11,12 +11,9 @@ trait JoinComponentCompiler
     /**
      * Compiles join to string to pass this string in query.
      *
-     * @param Builder      $query
-     * @param JoinClause[] $joins
+     * @param  JoinClause[]  $joins
      *
      * @throws GrammarException
-     *
-     * @return string
      */
     protected function compileJoinsComponent(Builder $query, array $joins): string
     {
@@ -29,11 +26,11 @@ trait JoinComponentCompiler
                 $result[] = 'GLOBAL';
             }
 
-            if (!is_null($join->getStrict())) {
+            if (! is_null($join->getStrict())) {
                 $result[] = $join->getStrict();
             }
 
-            if (!is_null($join->getType())) {
+            if (! is_null($join->getType())) {
                 $result[] = $join->getType();
             }
 
@@ -43,7 +40,7 @@ trait JoinComponentCompiler
                 $result[] = 'AS';
                 $result[] = $this->wrap($join->getAlias());
             }
-            if (!is_null($join->getUsing())) {
+            if (! is_null($join->getUsing())) {
                 $result[] = 'USING';
                 $result[] = implode(', ', array_map(function ($column) {
                     return $this->wrap($column);
@@ -60,7 +57,6 @@ trait JoinComponentCompiler
     /**
      * Verifies join.
      *
-     * @param JoinClause $joinClause
      *
      * @throws GrammarException
      */
@@ -71,7 +67,7 @@ trait JoinComponentCompiler
             (is_null($joinClause->getUsing()) && is_null($joinClause->getOnClauses()))
         ) {
             throw GrammarException::wrongJoin($joinClause);
-        } elseif (!is_null($joinClause->getUsing()) && !is_null($joinClause->getOnClauses())) {
+        } elseif (! is_null($joinClause->getUsing()) && ! is_null($joinClause->getOnClauses())) {
             throw GrammarException::ambiguousJoinKeys();
         }
     }

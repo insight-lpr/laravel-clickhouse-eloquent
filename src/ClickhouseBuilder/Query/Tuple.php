@@ -16,8 +16,6 @@ class Tuple
 
     /**
      * Tuple constructor.
-     *
-     * @param array $elements
      */
     public function __construct(array $elements = [])
     {
@@ -26,8 +24,6 @@ class Tuple
 
     /**
      * Get tuple elements.
-     *
-     * @return array
      */
     public function getElements(): array
     {
@@ -37,9 +33,7 @@ class Tuple
     /**
      * Add element to tuple.
      *
-     * @param array ...$elements
-     *
-     * @return Tuple
+     * @param  array  ...$elements
      */
     public function addElements(...$elements): self
     {

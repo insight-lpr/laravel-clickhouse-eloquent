@@ -11,10 +11,10 @@ use LaravelClickhouseEloquent\ClickhouseClient\Exceptions\QueryStatisticExceptio
  * 2. bytes - number of bytes read by server
  * 3. time - query execution time in seconds
  *
- * @property int   $rows
- * @property int   $bytes
+ * @property int $rows
+ * @property int $bytes
  * @property float $time
- * @property int   $rowsBeforeLimitAtLeast
+ * @property int $rowsBeforeLimitAtLeast
  */
 class QueryStatistic
 {
@@ -48,11 +48,6 @@ class QueryStatistic
 
     /**
      * QueryStatistic constructor.
-     *
-     * @param int      $rows
-     * @param int      $bytes
-     * @param float    $time
-     * @param null|int $rowsBeforeLimitAtLeast
      */
     public function __construct(int $rows, int $bytes, float $time, ?int $rowsBeforeLimitAtLeast = null)
     {
@@ -64,8 +59,6 @@ class QueryStatistic
 
     /**
      * Returns number of read rows.
-     *
-     * @return int
      */
     public function getRows(): int
     {
@@ -74,8 +67,6 @@ class QueryStatistic
 
     /**
      * Returns number of read bytes.
-     *
-     * @return int
      */
     public function getBytes(): int
     {
@@ -84,8 +75,6 @@ class QueryStatistic
 
     /**
      * Returns query execution time.
-     *
-     * @return float
      */
     public function getTime(): float
     {
@@ -94,8 +83,6 @@ class QueryStatistic
 
     /**
      * Returns rows before limit at least.
-     *
-     * @return int|null
      */
     public function getRowsBeforeLimitAtLeast(): ?int
     {
@@ -105,11 +92,10 @@ class QueryStatistic
     /**
      * Getter to simplify access to rows, bytes and time.
      *
-     * @param string $name
+     * @param  string  $name
+     * @return mixed
      *
      * @throws \LaravelClickhouseEloquent\ClickhouseClient\Exceptions\QueryStatisticException
-     *
-     * @return mixed
      */
     public function __get($name)
     {

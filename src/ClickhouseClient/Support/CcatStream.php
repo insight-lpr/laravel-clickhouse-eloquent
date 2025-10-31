@@ -11,9 +11,6 @@ class CcatStream extends NoSeekStream
 
     /**
      * CcatStream constructor.
-     *
-     * @param \Psr\Http\Message\StreamInterface $stream
-     * @param                                   $process
      */
     public function __construct(StreamInterface $stream, $process)
     {
@@ -22,7 +19,5 @@ class CcatStream extends NoSeekStream
         $this->process = $process;
     }
 
-    public function getSize()
-    {
-    }
+    public function getSize() {}
 }

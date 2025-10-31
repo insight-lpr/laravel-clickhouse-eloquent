@@ -13,11 +13,10 @@ trait WithClient
     }
 
     /**
-     * @return Client
      * @deprecated use $this->getThisClient() instead
      */
     public static function getClient(): Client
     {
-        return DB::connection((new static())->connection)->getClient();
+        return DB::connection((new static)->connection)->getClient();
     }
 }

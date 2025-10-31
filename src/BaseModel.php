@@ -17,8 +17,8 @@ use LaravelClickhouseEloquent\ClickhouseBuilder\Query\TwoElementsLogicExpression
 class BaseModel
 {
     use HasAttributes;
-    use HidesAttributes;
     use HasEvents;
+    use HidesAttributes;
     use WithClient;
 
     /**
@@ -30,6 +30,7 @@ class BaseModel
 
     /**
      * Use this only when you have Buffer table engine for inserts
+     *
      * @link https://clickhouse.tech/docs/ru/engines/table-engines/special/buffer/
      *
      * @var string
@@ -75,8 +76,8 @@ class BaseModel
      * Determine if an attribute or relation exists on the model.
      * The __isset magic method is triggered by calling isset() or empty() on inaccessible properties.
      *
-     * @param string $key The name of the attribute or relation.
-     * @return bool  True if the attribute or relation exists, false otherwise.
+     * @param  string  $key  The name of the attribute or relation.
+     * @return bool True if the attribute or relation exists, false otherwise.
      */
     public function __isset($key)
     {
@@ -98,8 +99,6 @@ class BaseModel
 
     /**
      * Get the table associated with the model.
-     *
-     * @return string
      */
     public function getTable(): string
     {
@@ -108,8 +107,6 @@ class BaseModel
 
     /**
      * Get the table name for insert queries
-     *
-     * @return string
      */
     public function getTableForInserts(): string
     {
@@ -118,7 +115,6 @@ class BaseModel
 
     /**
      * Use this field for OPTIMIZE TABLE OR ALTER TABLE (also DELETE) queries
-     * @return string
      */
     public function getTableSources(): string
     {
@@ -127,7 +123,7 @@ class BaseModel
 
     /**
      * Create and return an un-saved model instance.
-     * @param array $attributes
+     *
      * @return static
      */
     public static function make(array $attributes = [])
@@ -140,8 +136,9 @@ class BaseModel
 
     /**
      * Save a new model and return the instance.
-     * @param array $attributes
+     *
      * @return static
+     *
      * @throws Exception
      */
     public static function create(array $attributes = [])
@@ -160,7 +157,7 @@ class BaseModel
 
     /**
      * Fill the model with an array of attributes.
-     * @param array $attributes
+     *
      * @return $this
      */
     public function fill(array $attributes): self
@@ -174,16 +171,15 @@ class BaseModel
 
     /**
      * Save the model to the database.
-     * @param array $options
-     * @return bool
+     *
      * @throws Exception
      */
     public function save(array $options = []): bool
     {
         if ($this->exists) {
-            throw new Exception("Clickhouse does not allow update rows");
+            throw new Exception('Clickhouse does not allow update rows');
         }
-        $this->exists = !static::insertAssoc([$this->getAttributes()])->isError();
+        $this->exists = ! static::insertAssoc([$this->getAttributes()])->isError();
         $this->fireModelEvent('saved', false);
 
         return $this->exists;
@@ -191,28 +187,29 @@ class BaseModel
 
     /**
      * Bulk insert into Clickhouse database
-     * @param array[] $rows
-     * @return Statement
+     *
+     * @param  array[]  $rows
+     *
      * @deprecated use insertBulk
      */
     public static function insert(array $rows): Statement
     {
-        $instance = new static();
+        $instance = new static;
 
         return $instance->getThisClient()->insert($instance->getTableForInserts(), $rows);
     }
 
     /**
      * Bulk insert into Clickhouse database
-     * @param array[] $rows
-     * @param array   $columns
-     * @return Statement
+     *
+     * @param  array[]  $rows
+     *
      * @example MyModel::insertBulk([['model 1', 1], ['model 2', 2]], ['model_name', 'some_param']);
      */
     public static function insertBulk(array $rows, array $columns = []): Statement
     {
-        $instance = new static();
-        if ($castsAssoc = (new static())->casts) {
+        $instance = new static;
+        if ($castsAssoc = (new static)->casts) {
             $casts = [];
             foreach ($castsAssoc as $castColumn => $castType) {
                 if ($index = array_search($castColumn, $columns)) {
@@ -229,22 +226,22 @@ class BaseModel
 
     /**
      * Prepare each row by calling static::prepareFromRequest to bulk insert into database
-     * @param array[] $rows
-     * @param array   $columns
-     * @return Statement
+     *
+     * @param  array[]  $rows
      */
     public static function prepareAndInsert(array $rows, array $columns = []): Statement
     {
-        $rows     = array_map('static::prepareFromRequest', $rows, $columns);
-        $instance = new static();
+        $rows = array_map('static::prepareFromRequest', $rows, $columns);
+        $instance = new static;
 
         return $instance->getThisClient()->insert($instance->getTableForInserts(), $rows, $columns);
     }
 
     /**
      * Bulk insert rows as associative array into Clickhouse database
-     * @param array[] $rows
-     * @return Statement
+     *
+     * @param  array[]  $rows
+     *
      * @example MyModel::insertAssoc([['model_name' => 'model 1', 'some_param' => 1], ['model_name' => 'model 2', 'some_param' => 2]]);
      */
     public static function insertAssoc(array $rows): Statement
@@ -256,20 +253,20 @@ class BaseModel
                 $row = array_replace(array_flip($keys), $row);
             }
         }
-        if ($casts = (new static())->casts) {
+        if ($casts = (new static)->casts) {
             foreach ($rows as &$row) {
                 $row = static::castRow($row, $casts);
             }
         }
-        $instance = new static();
+        $instance = new static;
 
         return $instance->getThisClient()->insertAssocBulk($instance->getTableForInserts(), $rows);
     }
 
     /**
      * Prepare each row by calling static::prepareAssocFromRequest to bulk insert into database
-     * @param array[] $rows
-     * @return Statement
+     *
+     * @param  array[]  $rows
      */
     public static function prepareAndInsertAssoc(array $rows): Statement
     {
@@ -281,9 +278,6 @@ class BaseModel
     /**
      * Prepare row to insert into DB, non-associative array
      * Need to overwrite in nested models
-     * @param array $row
-     * @param array $columns
-     * @return array
      */
     public static function prepareFromRequest(array $row, array $columns = []): array
     {
@@ -293,8 +287,6 @@ class BaseModel
     /**
      * Prepare row to insert into DB, associative array
      * Need to overwrite in nested models
-     * @param array $row
-     * @return array
      */
     public static function prepareAssocFromRequest(array $row): array
     {
@@ -305,8 +297,8 @@ class BaseModel
     {
         foreach ($casts as $index => $castType) {
             $value = $row[$index];
-            if ('boolean' == $castType) {
-                $value = (int)(bool)$value;
+            if ($castType == 'boolean') {
+                $value = (int) (bool) $value;
             }
             $row[$index] = $value;
         }
@@ -315,19 +307,15 @@ class BaseModel
     }
 
     /**
-     * @param string|array|RawColumn $select optional = ['*']
-     * @return Builder
+     * @param  string|array|RawColumn  $select  optional = ['*']
      */
     public static function select($select = ['*']): Builder
     {
-        $instance = new static();
+        $instance = new static;
 
         return $instance->newQuery()->select($select)->from($instance->getTable());
     }
 
-    /**
-     * @return Builder
-     */
     protected function newQuery(): Builder
     {
         return new Builder($this->getThisClient());
@@ -335,7 +323,6 @@ class BaseModel
 
     /**
      * Necessary stub for HasAttributes trait
-     * @return array
      */
     public function getCasts(): array
     {
@@ -344,7 +331,6 @@ class BaseModel
 
     /**
      * Necessary stub for HasAttributes trait
-     * @return bool
      */
     public function usesTimestamps(): bool
     {
@@ -353,7 +339,8 @@ class BaseModel
 
     /**
      * Necessary stub for HasAttributes trait
-     * @param string $key
+     *
+     * @param  string  $key
      * @return mixed
      */
     public function getRelationValue($key)
@@ -364,7 +351,6 @@ class BaseModel
     /**
      * Dynamically retrieve attributes on the model.
      *
-     * @param string $key
      * @return mixed
      */
     public function __get(string $key)
@@ -375,9 +361,7 @@ class BaseModel
     /**
      * Dynamically set attributes on the model.
      *
-     * @param string $key
-     * @param mixed  $value
-     * @return void
+     * @param  mixed  $value
      */
     public function __set(string $key, $value): void
     {
@@ -386,20 +370,18 @@ class BaseModel
 
     /**
      * Optimize table. Using for ReplacingMergeTree, etc.
+     *
      * @source https://clickhouse.tech/docs/ru/sql-reference/statements/optimize/
-     * @param bool        $final
-     * @param string|null $partition
-     * @return Statement
      */
     public static function optimize(bool $final = false, ?string $partition = null): Statement
     {
-        $instance = new static();
-        $sql      = "OPTIMIZE TABLE ".$instance->getTableSources();
+        $instance = new static;
+        $sql = 'OPTIMIZE TABLE '.$instance->getTableSources();
         if ($partition) {
             $sql .= " PARTITION '$partition'";
         }
         if ($final) {
-            $sql .= " FINAL";
+            $sql .= ' FINAL';
         }
 
         return $instance->getThisClient()->write($sql);
@@ -407,17 +389,16 @@ class BaseModel
 
     public static function truncate(): Statement
     {
-        $instance = new static();
+        $instance = new static;
 
         return $instance->getThisClient()->write('TRUNCATE TABLE '.$instance->getTableSources());
     }
 
     /**
-     * @param TwoElementsLogicExpression|string|Closure $column
-     * @param int|float|string|null                     $operator       or $value
-     * @param int|float|string|null                     $value
-     * @param string                                    $concatOperator Operator::AND for example
-     * @return Builder
+     * @param  TwoElementsLogicExpression|string|Closure  $column
+     * @param  int|float|string|null  $operator  or $value
+     * @param  int|float|string|null  $value
+     * @param  string  $concatOperator  Operator::AND for example
      */
     public static function where(
         $column,
@@ -425,8 +406,8 @@ class BaseModel
         $value = null,
         string $concatOperator = Operator::AND
     ): Builder {
-        $instance = new static();
-        $builder  = $instance->newQuery()->select(['*'])
+        $instance = new static;
+        $builder = $instance->newQuery()->select(['*'])
             ->from($instance->getTable())
             ->setSourcesTable($instance->getTableSources());
         if (is_null($value)) {
@@ -439,13 +420,9 @@ class BaseModel
         return $builder;
     }
 
-    /**
-     * @param string $expression
-     * @return Builder
-     */
     public static function whereRaw(string $expression): Builder
     {
-        $instance = new static();
+        $instance = new static;
 
         return $instance->newQuery()->select(['*'])
             ->from($instance->getTable())
@@ -453,12 +430,9 @@ class BaseModel
             ->whereRaw($expression);
     }
 
-
     /**
      * Get the dynamic relation resolver if defined or inherited, or return null.
      *
-     * @param $class
-     * @param $key
      * @return mixed|null
      */
     public function relationResolver($class, $key): mixed
@@ -468,9 +442,6 @@ class BaseModel
 
     /**
      * Determine if the given relation is loaded.
-     *
-     * @param $key
-     * @return bool
      */
     public function relationLoaded($key): bool
     {
@@ -479,8 +450,6 @@ class BaseModel
 
     /**
      * Determine if accessing missing attributes is disabled.
-     *
-     * @return bool
      */
     public static function preventsAccessingMissingAttributes(): bool
     {
@@ -489,8 +458,6 @@ class BaseModel
 
     /**
      * Begin querying the model.
-     *
-     * @return Builder
      */
     public static function query(): Builder
     {

@@ -66,7 +66,7 @@ echo "\nTest 5: Testing enum isValid method...\n";
 try {
     $valid = \LaravelClickhouseEloquent\ClickhouseBuilder\Query\Enums\Format::isValid('JSON');
     $invalid = \LaravelClickhouseEloquent\ClickhouseBuilder\Query\Enums\Format::isValid('INVALID');
-    if ($valid && !$invalid) {
+    if ($valid && ! $invalid) {
         echo "  ✓ PASS: isValid method works correctly\n";
         $passed++;
     } else {
@@ -81,7 +81,7 @@ try {
 // Test 6: Test main classes
 echo "\nTest 6: Testing main application classes...\n";
 try {
-    $grammar = new \LaravelClickhouseEloquent\Grammar();
+    $grammar = new \LaravelClickhouseEloquent\Grammar;
     $raw = new \LaravelClickhouseEloquent\RawColumn('test');
     echo "  ✓ PASS: Main classes load correctly\n";
     $passed++;
@@ -126,9 +126,9 @@ try {
 echo "\n==========================================================\n";
 echo "                    SUMMARY\n";
 echo "==========================================================\n";
-echo "Total Tests: " . ($passed + $failed) . "\n";
+echo 'Total Tests: '.($passed + $failed)."\n";
 echo "Passed: $passed ✓\n";
-echo "Failed: $failed" . ($failed > 0 ? " ✗" : "") . "\n";
+echo "Failed: $failed".($failed > 0 ? ' ✗' : '')."\n";
 
 if ($failed === 0) {
     echo "\n✅ ALL TESTS PASSED! Migration successful!\n";

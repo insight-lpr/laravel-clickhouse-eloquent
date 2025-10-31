@@ -33,8 +33,6 @@ class Cluster
     /**
      * Cluster constructor.
      *
-     * @param string $name
-     * @param array  $servers
      *
      * @throws ClusterException
      */
@@ -47,16 +45,14 @@ class Cluster
     /**
      * Pushes servers to cluster.
      *
-     * @param array $servers Each server can be provided as array or Server instance
+     * @param  array  $servers  Each server can be provided as array or Server instance
      *
      * @throws \LaravelClickhouseEloquent\ClickhouseClient\Exceptions\ClusterException
-     *
-     * @return \LaravelClickhouseEloquent\ClickhouseClient\Cluster
      */
     public function addServers(array $servers): self
     {
         foreach ($servers as $hostname => $server) {
-            if (!$server instanceof Server && is_array($server)) {
+            if (! $server instanceof Server && is_array($server)) {
                 $host = $server['host'];
                 $port = $server['port'] ?? null;
                 $database = $server['database'] ?? null;
@@ -68,7 +64,7 @@ class Cluster
             }
 
             /* @var Server $server */
-            if (!is_string($hostname)) {
+            if (! is_string($hostname)) {
                 $hostname = $server->getHost();
             }
 
@@ -81,8 +77,6 @@ class Cluster
     /**
      * Pushes one server to cluster.
      *
-     * @param string                       $hostname
-     * @param \LaravelClickhouseEloquent\ClickhouseClient\Server $server
      *
      * @throws \LaravelClickhouseEloquent\ClickhouseClient\Exceptions\ClusterException
      */
@@ -114,15 +108,15 @@ class Cluster
     /**
      * Returns servers in cluster by tag.
      *
-     * @param string $tag
      *
-     * @throws ClusterException
      *
      * @return \LaravelClickhouseEloquent\ClickhouseClient\Server[]
+     *
+     * @throws ClusterException
      */
     public function getServersByTag(string $tag): array
     {
-        if (!isset($this->serversByTags[$tag])) {
+        if (! isset($this->serversByTags[$tag])) {
             throw ClusterException::tagNotFound($tag);
         }
 
@@ -132,15 +126,12 @@ class Cluster
     /**
      * Returns server by specified hostname.
      *
-     * @param string $hostname
      *
      * @throws \LaravelClickhouseEloquent\ClickhouseClient\Exceptions\ClusterException
-     *
-     * @return \LaravelClickhouseEloquent\ClickhouseClient\Server
      */
     public function getServerByHostname(string $hostname): Server
     {
-        if (!isset($this->servers[$hostname])) {
+        if (! isset($this->servers[$hostname])) {
             throw ClusterException::serverNotFound($hostname);
         }
 
@@ -149,8 +140,6 @@ class Cluster
 
     /**
      * Returns cluster name.
-     *
-     * @return string
      */
     public function getName(): string
     {

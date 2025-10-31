@@ -14,7 +14,7 @@ class Expression
     /**
      * Create a new raw query expression.
      *
-     * @param mixed $value
+     * @param  mixed  $value
      */
     public function __construct($value)
     {

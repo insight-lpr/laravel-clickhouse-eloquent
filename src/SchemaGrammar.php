@@ -12,29 +12,22 @@ class SchemaGrammar extends Grammar
 {
     /**
      * Compile the query to determine the list of tables.
-     *
-     * @return string
      */
     public function compileTableExists(): string
     {
-        return "select * from system.tables where database = :0 and name = :1";
+        return 'select * from system.tables where database = :0 and name = :1';
     }
 
     /**
      * Compile a create table command.
-     *
-     * @param Blueprint $blueprint
-     * @param Fluent $command
-     * @param Connection $connection
-     * @return array
      */
     public function compileCreate(Blueprint $blueprint, Fluent $command, Connection $connection): array
     {
-        $sql = "CREATE TABLE :table (
+        $sql = 'CREATE TABLE :table (
                 :columns
             )
             ENGINE = MergeTree()
-            ORDER BY (:orderBy)";
+            ORDER BY (:orderBy)';
         $orderBy = $blueprint->getAddedColumns()[0]->name;
         $bindings = [
             ':table' => $blueprint->getTable(),
@@ -48,16 +41,13 @@ class SchemaGrammar extends Grammar
 
     /**
      * Compile the blueprint's column definitions.
-     *
-     * @param Blueprint $blueprint
-     * @return array
      */
     protected function getColumns(Blueprint $blueprint): array
     {
         $columns = [];
 
         foreach ($blueprint->getAddedColumns() as $column) {
-            $sql = $column->name . ' ' . $this->getType($column);
+            $sql = $column->name.' '.$this->getType($column);
             $columns[] = $sql;
         }
 
@@ -66,9 +56,6 @@ class SchemaGrammar extends Grammar
 
     /**
      * Create the column definition for an integer type.
-     *
-     * @param Fluent $column
-     * @return string
      */
     protected function typeInteger(Fluent $column): string
     {
@@ -77,9 +64,6 @@ class SchemaGrammar extends Grammar
 
     /**
      * Create the column definition for a big integer type.
-     *
-     * @param Fluent $column
-     * @return string
      */
     protected function typeBigInteger(Fluent $column): string
     {
@@ -88,9 +72,6 @@ class SchemaGrammar extends Grammar
 
     /**
      * Create the column definition for a string type.
-     *
-     * @param Fluent $column
-     * @return string
      */
     protected function typeString(Fluent $column): string
     {
@@ -99,9 +80,6 @@ class SchemaGrammar extends Grammar
 
     /**
      * Create the column definition for a timestamp type.
-     *
-     * @param Fluent $column
-     * @return string
      */
     protected function typeTimestamp(Fluent $column): string
     {
@@ -110,9 +88,6 @@ class SchemaGrammar extends Grammar
 
     /**
      * Create the column definition for a text type.
-     *
-     * @param Fluent $column
-     * @return string
      */
     protected function typeText(Fluent $column): string
     {
@@ -121,13 +96,9 @@ class SchemaGrammar extends Grammar
 
     /**
      * Create the column definition for a long text type.
-     *
-     * @param Fluent $column
-     * @return string
      */
     protected function typeLongText(Fluent $column): string
     {
         return 'String';
     }
-
 }

@@ -37,7 +37,7 @@ enum Operator: string
      */
     public static function isValid(mixed $value): bool
     {
-        if (!is_string($value)) {
+        if (! is_string($value)) {
             return false;
         }
 

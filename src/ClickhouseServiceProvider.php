@@ -17,14 +17,14 @@ class ClickhouseServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        $db = $this->app->make("db");
+        $db = $this->app->make('db');
 
-        $db->extend("clickhouse", function ($config, $name) {
-            $config["name"] = $name;
+        $db->extend('clickhouse', function ($config, $name) {
+            $config['name'] = $name;
 
             return Connection::createWithClient($config);
         });
 
-        BaseModel::setEventDispatcher($this->app["events"]);
+        BaseModel::setEventDispatcher($this->app['events']);
     }
 }

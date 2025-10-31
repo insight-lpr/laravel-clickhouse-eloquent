@@ -10,10 +10,7 @@ trait HavingsComponentCompiler
     /**
      * Compiles havings to string to pass this string in query.
      *
-     * @param Builder                      $builder
-     * @param TwoElementsLogicExpression[] $havings
-     *
-     * @return string
+     * @param  TwoElementsLogicExpression[]  $havings
      */
     public function compileHavingsComponent(Builder $builder, array $havings): string
     {

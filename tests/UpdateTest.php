@@ -7,14 +7,14 @@ use Tests\Models\Example;
 
 class UpdateTest extends TestCase
 {
-    public function testUpdate()
+    public function test_update()
     {
         Example::truncate();
         Example::insertAssoc([['f_int' => 1, 'f_int2' => 2, 'f_string' => 'a']]);
         Example::where('f_int', 1)->update([
             'f_int2' => 3,
             'f_string' => 'b',
-            'created_at' => new RawColumn('created_at + INTERVAL 1 YEAR')
+            'created_at' => new RawColumn('created_at + INTERVAL 1 YEAR'),
         ]);
         usleep(3e4); // some lag in clickhouse server
         $rows = Example::where('f_int', 1)->getRows();

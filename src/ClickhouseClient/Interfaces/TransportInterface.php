@@ -15,18 +15,13 @@ interface TransportInterface
      *
      * Queries runs asyn
      *
-     * @param Query[] $queries
-     * @param int     $concurrency
-     *
-     * @return array
+     * @param  Query[]  $queries
      */
     public function write(array $queries, int $concurrency = 5): array;
 
     /**
      * Executes queries which returns result of any select expression.
      *
-     * @param array $queries
-     * @param int   $concurrency
      *
      * @return Result[]
      */

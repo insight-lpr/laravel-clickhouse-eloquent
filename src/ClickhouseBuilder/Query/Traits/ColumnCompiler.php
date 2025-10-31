@@ -9,10 +9,6 @@ trait ColumnCompiler
 {
     /**
      * Compiles column in string to pass this string in query.
-     *
-     * @param Column $column
-     *
-     * @return string
      */
     public function compileColumn(Column $column): string
     {
@@ -31,11 +27,11 @@ trait ColumnCompiler
             $result = $this->{$functionName}(empty($result) ? $this->wrap($columnName) : new Expression($result), $params);
         }
 
-        if (empty($result) && !is_null($columnName)) {
+        if (empty($result) && ! is_null($columnName)) {
             $result = $this->wrap($columnName);
         }
 
-        if (!is_null($column->getAlias())) {
+        if (! is_null($column->getAlias())) {
             $result .= " AS {$this->wrap($column->getAlias())}";
         }
 
@@ -45,8 +41,6 @@ trait ColumnCompiler
     /**
      * Compiles plus function on column.
      *
-     * @param $firstValue
-     * @param $secondValue
      *
      * @return string
      */
@@ -58,8 +52,6 @@ trait ColumnCompiler
     /**
      * Compiles multiple function on column.
      *
-     * @param $firstValue
-     * @param $secondValue
      *
      * @return string
      */
@@ -71,7 +63,6 @@ trait ColumnCompiler
     /**
      * Compiles runningDifference function on column.
      *
-     * @param $column
      *
      * @return string
      */
@@ -88,8 +79,6 @@ trait ColumnCompiler
     /**
      * Compiles sumIf function on column.
      *
-     * @param $column
-     * @param $condition
      *
      * @return string
      */
@@ -103,7 +92,6 @@ trait ColumnCompiler
     /**
      * Compiles sum function on column.
      *
-     * @param $column
      *
      * @return string
      */
@@ -115,7 +103,6 @@ trait ColumnCompiler
     /**
      * Compiles max function on column.
      *
-     * @param $column
      *
      * @return string
      */
@@ -127,8 +114,6 @@ trait ColumnCompiler
     /**
      * Compiles round function on column.
      *
-     * @param $column
-     * @param $decimals
      *
      * @return string
      */
@@ -140,7 +125,6 @@ trait ColumnCompiler
     /**
      * Compiles distinct function on column.
      *
-     * @param $column
      *
      * @return string
      */

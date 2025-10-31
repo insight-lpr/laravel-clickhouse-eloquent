@@ -17,18 +17,13 @@ class Builder extends BaseBuilder
 
     /**
      * Builder constructor.
-     *
-     * @param Client $client
      */
     public function __construct(Client $client)
     {
         $this->client = $client;
-        $this->grammar = new Grammar();
+        $this->grammar = new Grammar;
     }
 
-    /**
-     * @return \LaravelClickhouseEloquent\ClickhouseClient\Client
-     */
     public function getClient(): Client
     {
         return $this->client;
@@ -37,13 +32,12 @@ class Builder extends BaseBuilder
     /**
      * Perform compiled from builder sql query and getting result.
      *
-     * @param array $settings
      *
      * @return \LaravelClickhouseEloquent\ClickhouseClient\Query\Result|\LaravelClickhouseEloquent\ClickhouseClient\Query\Result[]
      */
     public function get(array $settings = [])
     {
-        if (!empty($this->async)) {
+        if (! empty($this->async)) {
             return $this->client->read($this->toAsyncQueries());
         } else {
             return $this->client->readOne($this->toSql(), $this->getFiles(), $settings);
@@ -52,10 +46,6 @@ class Builder extends BaseBuilder
 
     /**
      * Returns Query instance.
-     *
-     * @param array $settings
-     *
-     * @return Query
      */
     public function toQuery(array $settings = []): Query
     {
@@ -73,7 +63,7 @@ class Builder extends BaseBuilder
         $builder = $this->getCountQuery();
         $result = $builder->get();
 
-        if (!empty($this->groups)) {
+        if (! empty($this->groups)) {
             return count($result);
         } else {
             return $result[0]['count'] ?? 0;
@@ -82,8 +72,6 @@ class Builder extends BaseBuilder
 
     /**
      * Makes clean instance of builder.
-     *
-     * @return self
      */
     public function newQuery(): self
     {
@@ -92,14 +80,6 @@ class Builder extends BaseBuilder
 
     /**
      * Insert in table data from files.
-     *
-     * @param array  $columns
-     * @param array  $files
-     * @param string $format
-     * @param int    $concurrency
-     * @param array  $settings
-     *
-     * @return array
      */
     public function insertFiles(array $columns, array $files, string $format = Format::CSV->value, int $concurrency = 5, array $settings = []): array
     {
@@ -113,12 +93,7 @@ class Builder extends BaseBuilder
     /**
      * Insert in table data from files.
      *
-     * @param array                                                 $columns
-     * @param string|\LaravelClickhouseEloquent\ClickhouseClient\Interfaces\FileInterface $file
-     * @param string                                                $format
-     * @param array                                                 $settings
-     *
-     * @return bool
+     * @param  string|\LaravelClickhouseEloquent\ClickhouseClient\Interfaces\FileInterface  $file
      */
     public function insertFile(array $columns, $file, string $format = Format::CSV->value, array $settings = []): bool
     {
@@ -132,11 +107,11 @@ class Builder extends BaseBuilder
     /**
      * Performs insert query.
      *
-     * @param array $values
      *
-     * @throws \LaravelClickhouseEloquent\ClickhouseClientBuilder\Exceptions\GrammarException
      *
      * @return bool
+     *
+     * @throws \LaravelClickhouseEloquent\ClickhouseClientBuilder\Exceptions\GrammarException
      */
     public function insert(array $values)
     {
@@ -144,7 +119,7 @@ class Builder extends BaseBuilder
             return false;
         }
 
-        if (!is_array(reset($values))) {
+        if (! is_array(reset($values))) {
             $values = [$values];
         } /*
          * Here, we will sort the insert keys for every record so that each insert is
@@ -164,9 +139,10 @@ class Builder extends BaseBuilder
     /**
      * Performs ALTER TABLE `table` DELETE query.
      *
-     * @throws \LaravelClickhouseEloquent\ClickhouseClientBuilder\Exceptions\GrammarException
      *
      * @return bool
+     *
+     * @throws \LaravelClickhouseEloquent\ClickhouseClientBuilder\Exceptions\GrammarException
      */
     public function delete()
     {
@@ -178,9 +154,6 @@ class Builder extends BaseBuilder
     /**
      * Executes query to create table.
      *
-     * @param        $tableName
-     * @param string $engine
-     * @param array  $structure
      *
      * @return bool
      */
@@ -192,9 +165,6 @@ class Builder extends BaseBuilder
     /**
      * Executes query to create table if table does not exists.
      *
-     * @param        $tableName
-     * @param string $engine
-     * @param array  $structure
      *
      * @return bool
      */

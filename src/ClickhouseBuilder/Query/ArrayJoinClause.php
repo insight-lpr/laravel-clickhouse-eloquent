@@ -29,8 +29,6 @@ class ArrayJoinClause
 
     /**
      * JoinClause constructor.
-     *
-     * @param BaseBuilder $query
      */
     public function __construct(BaseBuilder $query)
     {
@@ -39,8 +37,6 @@ class ArrayJoinClause
 
     /**
      * Set LEFT join type.
-     *
-     * @return ArrayJoinClause
      */
     public function left(): self
     {
@@ -49,10 +45,6 @@ class ArrayJoinClause
 
     /**
      * Set join type.
-     *
-     * @param string $type
-     *
-     * @return ArrayJoinClause
      */
     public function type(string $type): self
     {
@@ -64,9 +56,7 @@ class ArrayJoinClause
     /**
      * Set array identifier for join.
      *
-     * @param string|Expression $arrayIdentifier
-     *
-     * @return ArrayJoinClause
+     * @param  string|Expression  $arrayIdentifier
      */
     public function array($arrayIdentifier): self
     {
@@ -91,8 +81,6 @@ class ArrayJoinClause
 
     /**
      * Get join type.
-     *
-     * @return JoinType|null
      */
     public function getType(): ?JoinType
     {

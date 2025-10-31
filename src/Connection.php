@@ -9,38 +9,30 @@ use Illuminate\Database\Connection as BaseConnection;
 
 class Connection extends BaseConnection
 {
-    public const DEFAULT_NAME = "clickhouse";
+    public const DEFAULT_NAME = 'clickhouse';
 
-    /** @var Client */
     protected Client $client;
 
-    /**
-     * @return Client
-     */
     public function getClient(): Client
     {
         return $this->client;
     }
 
-    /**
-     * @param array $config
-     * @return static
-     */
     public static function createWithClient(array $config): static
     {
-        $conn = new static(null, $config["database"], "", $config);
+        $conn = new static(null, $config['database'], '', $config);
         $conn->client = new Client($config);
-        $conn->client->database($config["database"]);
-        $conn->client->setTimeout((int) $config["timeout_query"]);
-        $conn->client->setConnectTimeOut((int) $config["timeout_connect"]);
-        if ($configSettings = &$config["settings"]) {
+        $conn->client->database($config['database']);
+        $conn->client->setTimeout((int) $config['timeout_query']);
+        $conn->client->setConnectTimeOut((int) $config['timeout_connect']);
+        if ($configSettings = &$config['settings']) {
             $settings = $conn->getClient()->settings();
             foreach ($configSettings as $sName => $sValue) {
                 $settings->set($sName, $sValue);
             }
         }
-        if ($retries = (int) ($config["retries"] ?? null)) {
-            $curler = new CurlerRollingWithRetries();
+        if ($retries = (int) ($config['retries'] ?? null)) {
+            $curler = new CurlerRollingWithRetries;
             $curler->setRetries($retries);
             $conn->client->transport()->setDirtyCurler($curler);
         }
@@ -48,19 +40,19 @@ class Connection extends BaseConnection
         return $conn;
     }
 
-    /** @inheritDoc */
+    /** {@inheritDoc} */
     protected function getDefaultQueryGrammar()
     {
         return new QueryGrammar($this);
     }
 
-    /** @inheritDoc */
+    /** {@inheritDoc} */
     protected function getDefaultSchemaGrammar()
     {
         return new SchemaGrammar($this);
     }
 
-    /** @inheritDoc */
+    /** {@inheritDoc} */
     public function getSchemaBuilder()
     {
         if (is_null($this->schemaGrammar)) {
@@ -70,7 +62,7 @@ class Connection extends BaseConnection
         return new SchemaBuilder($this);
     }
 
-    /** @inheritDoc */
+    /** {@inheritDoc} */
     public function select($query, $bindings = [], $useReadPdo = true): array
     {
         $query = QueryGrammar::prepareParameters($query);
@@ -78,13 +70,13 @@ class Connection extends BaseConnection
         return $this->client->select($query, $bindings)->rows();
     }
 
-    /** @inheritDoc */
+    /** {@inheritDoc} */
     public function statement($query, $bindings = []): bool
     {
-        return !$this->client->write($query, $bindings)->isError();
+        return ! $this->client->write($query, $bindings)->isError();
     }
 
-    /** @inheritDoc */
+    /** {@inheritDoc} */
     public function affectingStatement($query, $bindings = []): int
     {
         return (int) $this->statement($query, $bindings);

@@ -3,8 +3,8 @@
 namespace LaravelClickhouseEloquent\ClickhouseClient\Common;
 
 use GuzzleHttp\Psr7\Stream;
-use Psr\Http\Message\StreamInterface;
 use LaravelClickhouseEloquent\ClickhouseClient\Interfaces\FileInterface;
+use Psr\Http\Message\StreamInterface;
 
 class FileFromString extends AbstractFile implements FileInterface
 {

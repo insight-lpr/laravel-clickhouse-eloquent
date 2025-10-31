@@ -16,8 +16,6 @@ class Identifier
 
     /**
      * Identifier constructor.
-     *
-     * @param $value
      */
     public function __construct($value)
     {

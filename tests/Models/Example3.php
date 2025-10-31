@@ -11,5 +11,6 @@ use LaravelClickhouseEloquent\BaseModel;
 class Example3 extends BaseModel
 {
     protected $table = 'examples3';
+
     protected $casts = ['f_bool' => 'boolean'];
 }
