@@ -11,13 +11,6 @@
   "type": "library",
   "minimum-stability": "stable",
   "license": "MIT",
-  "authors": [
-    {
-      "name": "Akbarali",
-      "email": "github@akbarali.uz",
-      "homepage": "https://github.com/akbarali1"
-    }
-  ],
   "require": {
     "php": ">=8.3",
     "smi2/phpclickhouse": "^1.4.2",
