@@ -1,4 +1,4 @@
-![Tests](https://github.com/akbarali1/laravel-clickhouse-eloquent/actions/workflows/test.yml/badge.svg)
+![Tests](https://github.com/insight-lpr/laravel-clickhouse-eloquent/actions/workflows/test.yml/badge.svg)
 
 # phpClickHouse-laravel
 
@@ -24,7 +24,7 @@ More: https://github.com/smi2/phpClickHouse#features
 **1.**  Install via composer
 
 ```sh
-composer require akbarali1/laravel-clickhouse-eloquent
+composer require insight-lpr/laravel-clickhouse-eloquent
 ```
 
 **2.** Add new connection into your config/database.php:
@@ -214,8 +214,8 @@ $rows = MyTable::select(['field_one', new RawColumn('sum(field_two)', 'field_two
 
 ### Columns casting
 
-Before insertion, the column will be converted to the required data type specified in the field `$casts`.  
-This feature does not apply to data selection.  
+Before insertion, the column will be converted to the required data type specified in the field `$casts`.
+This feature does not apply to data selection.
 The supported cast types are: `boolean`.
 
 ```php
@@ -240,7 +240,7 @@ MyTable::insertAssoc([
 
 ### Events
 
-Events work just like an [eloquent model events](https://laravel.com/docs/9.x/eloquent#events)  
+Events work just like an [eloquent model events](https://laravel.com/docs/9.x/eloquent#events)
 Available events: **creating**, **created**, **saved**
 
 ### Retries
@@ -253,8 +253,8 @@ Patch your .env:
 CLICKHOUSE_RETRIES=2
 ```
 
-retries is optional, default value is 0.  
-0 mean only one attempt.  
+retries is optional, default value is 0.
+0 mean only one attempt.
 1 mean one attempt + 1 retry while error (total 2 attempts).
 
 ### Working with huge rows
@@ -262,7 +262,7 @@ retries is optional, default value is 0.
 You can chunk results like in Laravel
 
 ```php
-// Split the result into chunks of 30 rows 
+// Split the result into chunks of 30 rows
 $rows = MyTable::select(['field_one', 'field_two'])
     ->chunk(30, function ($rows) {
         foreach ($rows as $row) {
@@ -286,7 +286,7 @@ class MyTable extends BaseModel
 {
     // Not necessary. Can be obtained from class name MyTable => my_table
     protected $table = 'my_table';
-    // All inserts will be in the table $tableForInserts 
+    // All inserts will be in the table $tableForInserts
     // But all selects will be from $table
     protected $tableForInserts = 'my_table_buffer';
 }
@@ -399,7 +399,7 @@ use LaravelClickhouseEloquent\BaseModel;
 class MyTable2 extends BaseModel
 {
     protected $connection = 'clickhouse2';
-    
+
     protected $table = 'my_table2';
 }
 ```
@@ -411,12 +411,12 @@ class MyTable2 extends BaseModel
 return new class extends \LaravelClickhouseEloquent\Migration
 {
     protected $connection = 'clickhouse2';
-    
+
     public function up()
     {
         static::write('CREATE TABLE my_table2 ...');
     }
-    
+
     public function down()
     {
         static::write('DROP TABLE my_table2');
