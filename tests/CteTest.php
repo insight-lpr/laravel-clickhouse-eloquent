@@ -165,4 +165,37 @@ class CteTest extends TestCase
         // SETTINGS should be at the end
         $this->assertStringContainsString('SETTINGS max_threads=2', $sql);
     }
+
+    /**
+     * Integration test: execute CTE query against ClickHouse.
+     */
+    public function testCteExecutesAgainstClickhouse(): void
+    {
+        // Ensure we have test data
+        Example::truncate();
+        usleep(1e4);
+        Example::insertAssoc([
+            ['f_int' => 10, 'f_string' => 'a', 'f_int2' => 1, 'created_at' => date('Y-m-d H:i:s')],
+            ['f_int' => 20, 'f_string' => 'b', 'f_int2' => 2, 'created_at' => date('Y-m-d H:i:s')],
+            ['f_int' => 30, 'f_string' => 'c', 'f_int2' => 3, 'created_at' => date('Y-m-d H:i:s')],
+        ]);
+        usleep(1e4);
+
+        // Query using CTE
+        $rows = Example::select()
+            ->withCteExpression('threshold', 15)
+            ->withCte('filtered', function (Builder $q) {
+                $q->select('f_int', 'f_string')
+                  ->from('examples')
+                  ->where('f_int', '>', new RawColumn('threshold'));
+            })
+            ->newQuery()
+            ->select('*')
+            ->from('filtered')
+            ->getRows();
+
+        $this->assertCount(2, $rows);
+        $this->assertEquals(20, $rows[0]['f_int']);
+        $this->assertEquals(30, $rows[1]['f_int']);
+    }
 }
