@@ -19,6 +19,8 @@ class Builder extends BaseBuilder
     /** @var Client */
     protected $client;
     protected $settings = [];
+    /** @var array */
+    protected $ctes = [];
 
     /**
      * The name of the database connection to use.
@@ -129,4 +131,13 @@ class Builder extends BaseBuilder
         return new static($this->client);
     }
 
+    /**
+     * Get the CTEs for the query.
+     *
+     * @return array
+     */
+    public function getCtes(): array
+    {
+        return $this->ctes;
+    }
 }
