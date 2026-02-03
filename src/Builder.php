@@ -8,6 +8,7 @@ use ClickHouseDB\Client;
 use ClickHouseDB\Statement;
 use LaravelClickhouseEloquent\Exceptions\QueryException;
 use Tinderbox\ClickhouseBuilder\Query\BaseBuilder;
+use Tinderbox\ClickhouseBuilder\Query\Expression;
 
 class Builder extends BaseBuilder
 {
@@ -178,5 +179,34 @@ class Builder extends BaseBuilder
         $builder = new static($this->client);
         $callback($builder);
         return $builder->toSql();
+    }
+
+    /**
+     * Add a Common Table Expression (CTE) expression alias.
+     *
+     * WITH value AS name
+     *
+     * @param string $name The CTE alias name
+     * @param mixed $value Scalar, RawColumn/Expression, Closure, or Builder
+     * @return $this
+     */
+    public function withCteExpression(string $name, mixed $value): self
+    {
+        $sql = match (true) {
+            $value instanceof \Closure => '(' . $this->compileClosureToSql($value) . ')',
+            $value instanceof Builder => '(' . $value->toSql() . ')',
+            $value instanceof Expression => $value->getValue(),
+            is_string($value) => "'" . addslashes($value) . "'",
+            is_bool($value) => $value ? '1' : '0',
+            default => (string) $value,
+        };
+
+        $this->ctes[] = [
+            'name' => $name,
+            'type' => 'expression',
+            'sql' => $sql,
+        ];
+
+        return $this;
     }
 }
