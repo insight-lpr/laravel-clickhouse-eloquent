@@ -140,4 +140,43 @@ class Builder extends BaseBuilder
     {
         return $this->ctes;
     }
+
+    /**
+     * Add a Common Table Expression (CTE) subquery.
+     *
+     * WITH name AS (SELECT ...)
+     *
+     * @param string $name The CTE alias name
+     * @param \Closure|Builder|string $query The subquery as closure, Builder, or raw SQL
+     * @return $this
+     */
+    public function withCte(string $name, \Closure|Builder|string $query): self
+    {
+        $sql = match (true) {
+            $query instanceof \Closure => $this->compileClosureToSql($query),
+            $query instanceof Builder => $query->toSql(),
+            default => $query,
+        };
+
+        $this->ctes[] = [
+            'name' => $name,
+            'type' => 'subquery',
+            'sql' => $sql,
+        ];
+
+        return $this;
+    }
+
+    /**
+     * Compile a closure to SQL by executing it with a fresh Builder.
+     *
+     * @param \Closure $callback
+     * @return string
+     */
+    protected function compileClosureToSql(\Closure $callback): string
+    {
+        $builder = new static($this->client);
+        $callback($builder);
+        return $builder->toSql();
+    }
 }
