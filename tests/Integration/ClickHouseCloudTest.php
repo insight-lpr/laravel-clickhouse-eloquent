@@ -92,7 +92,7 @@ class ClickHouseCloudTest extends TestCase
     }
 
     // ---------------------------------------------------------------
-    // Path 2: Tinderbox Builder (Builder via BaseModel)
+    // Path 2: Builder (via BaseModel)
     // ---------------------------------------------------------------
 
     public function testBaseModelSelectWithWhere(): void
@@ -160,13 +160,15 @@ class ClickHouseCloudTest extends TestCase
         $this->assertNotEquals($page1Ids, $page2Ids);
     }
 
-    public function testBuilderToRawSqlMatchesToSql(): void
+    public function testBuilderToRawSqlSubstitutesBindings(): void
     {
         $query = Camera::select()
             ->where('org_id', 2568)
             ->where('status', 1);
 
-        $this->assertSame($query->toSql(), $query->toRawSql());
+        $rawSql = $query->toRawSql();
+        $this->assertStringContainsString('2568', $rawSql);
+        $this->assertStringNotContainsString('?', $rawSql);
     }
 
     public function testWithCteExpressionExecutes(): void
@@ -194,9 +196,9 @@ class ClickHouseCloudTest extends TestCase
 
         $sql = $query->toSql();
 
-        // WITH should come before SELECT
-        $this->assertMatchesRegularExpression('/^WITH\s+active_cameras\s+AS\s+\(SELECT/', $sql);
-        $this->assertStringContainsString('FROM `guardian`.`cameras`', $sql);
+        // WITH should come before select
+        $this->assertMatchesRegularExpression('/^WITH\s+active_cameras\s+AS\s+\(select/', $sql);
+        $this->assertStringContainsString('from `guardian`.`cameras`', $sql);
     }
 
     public function testWithCteSubqueryExecutes(): void
@@ -210,7 +212,7 @@ class ClickHouseCloudTest extends TestCase
                 )
                 SELECT * FROM active_cameras LIMIT 5";
 
-        $rows = $client->select($sql)->rows();
+        $rows = $client->select($sql);
 
         $this->assertNotEmpty($rows);
         foreach ($rows as $row) {

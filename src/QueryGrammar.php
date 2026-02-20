@@ -4,64 +4,38 @@ declare(strict_types=1);
 
 namespace LaravelClickhouseEloquent;
 
-use Illuminate\Database\Query\Builder;
+use Illuminate\Database\Query\Builder as LaravelBuilder;
 use Illuminate\Database\Query\Grammars\Grammar;
 
 class QueryGrammar extends Grammar
 {
-    public const PARAMETER_SIGN = '#@?';
-
-    /** @inheritDoc */
-    public function parameterize(array $values): string
-    {
-        return implode(', ', array_map([$this, 'parameter'], $values));
-    }
-
-    /** @inheritDoc */
-    public function parameter($value)
-    {
-        return $this->isExpression($value) ? $this->getValue($value) : self::PARAMETER_SIGN;
-    }
-
-    /** @inheritDoc */
-    public function compileWheres(Builder $query): string
-    {
-        return static::prepareParameters(parent::compileWheres($query));
-    }
-
     /**
-     * Second part of trick to change signs "?" to ":0", ":1" and so on
-     * @param string $sql
-     * @return string
+     * Wrap a single string in backtick-quoted identifier (ClickHouse-compatible).
      */
-    public static function prepareParameters(string $sql): string
+    protected function wrapValue($value)
     {
-        $parameterNum = 0;
-        while (($pos = strpos($sql, self::PARAMETER_SIGN)) !== false) {
-            $sql = substr_replace($sql, ":$parameterNum", $pos, strlen(self::PARAMETER_SIGN));
-            $parameterNum++;
-        }
-
-        return $sql;
+        return $value === '*' ? $value : '`' . str_replace('`', '``', $value) . '`';
     }
 
     /** @inheritDoc */
-    protected function compileDeleteWithoutJoins(Builder $query, $table, $where): string
+    protected function compileDeleteWithoutJoins(LaravelBuilder $query, $table, $where): string
     {
         return "alter table {$table} delete {$where}";
     }
 
     /**
-     * Compile a select query into SQL with CTE support.
-     *
-     * @param Builder $query
-     * @return string
+     * Compile a select query into SQL with ClickHouse-specific clause support.
      */
-    public function compileSelect(Builder $query): string
+    public function compileSelect(LaravelBuilder $query): string
     {
         $sql = parent::compileSelect($query);
 
-        // Check for CTEs added via macro
+        // ClickHouse-specific clauses from our Builder
+        if ($query instanceof Builder) {
+            $sql = $this->injectClickhouseClauses($query, $sql);
+        }
+
+        // CTEs added via dynamic property (Eloquent wrapper path)
         if (isset($query->clickhouseCtes) && !empty($query->clickhouseCtes)) {
             $sql = $this->compileCtes($query->clickhouseCtes) . $sql;
         }
@@ -70,20 +44,64 @@ class QueryGrammar extends Grammar
     }
 
     /**
+     * Inject ClickHouse-specific clauses into the compiled SQL.
+     */
+    protected function injectClickhouseClauses(Builder $query, string $sql): string
+    {
+        // CTEs from our Builder
+        if (!empty($query->getCtes())) {
+            $sql = $this->compileCtes($query->getCtes()) . $sql;
+        }
+
+        // FINAL and SAMPLE — injected after the FROM clause
+        $afterFrom = '';
+        if ($query->useFinal) {
+            $afterFrom .= ' FINAL';
+        }
+        if ($query->sampleCoefficient !== null) {
+            $afterFrom .= ' SAMPLE ' . $query->sampleCoefficient;
+        }
+
+        // ARRAY JOIN — injected after FROM (and FINAL/SAMPLE)
+        if ($query->arrayJoinColumn !== null) {
+            $type = $query->arrayJoinType ? $query->arrayJoinType . ' ' : '';
+            $afterFrom .= ' ' . $type . 'ARRAY JOIN ' . $this->wrap($query->arrayJoinColumn);
+        }
+
+        if ($afterFrom !== '') {
+            $sql = $this->insertAfterFrom($sql, $afterFrom);
+        }
+
+        // PREWHERE — injected before WHERE
+        if (!empty($query->preWheres)) {
+            $preWhereSql = $this->compilePreWheres($query);
+            $sql = $this->insertPreWhere($sql, $preWhereSql);
+        }
+
+        // LIMIT BY — injected before the final LIMIT
+        if ($query->limitByCount !== null) {
+            $limitBySql = $this->compileLimitBy($query);
+            $sql = $this->insertLimitBy($sql, $limitBySql);
+        }
+
+        // SETTINGS — appended at the very end
+        if (!empty($query->getSettings())) {
+            $sql .= ' ' . $this->compileSettings($query->getSettings());
+        }
+
+        return $sql;
+    }
+
+    /**
      * Compile the CTEs into a WITH clause.
-     *
-     * @param array $ctes
-     * @return string
      */
     protected function compileCtes(array $ctes): string
     {
         $parts = [];
         foreach ($ctes as $cte) {
             if ($cte['type'] === 'expression') {
-                // Expression style: value AS name
                 $parts[] = "{$cte['sql']} AS {$cte['name']}";
             } else {
-                // Subquery style: name AS (SELECT ...)
                 $parts[] = "{$cte['name']} AS ({$cte['sql']})";
             }
         }
@@ -92,16 +110,101 @@ class QueryGrammar extends Grammar
     }
 
     /**
-     * Convert the colon-style placeholders back to question marks before raw formatting.
-     *
-     * @param string $sql
-     * @param array $bindings
-     * @return string
+     * Compile PREWHERE clauses.
      */
-    public function substituteBindingsIntoRawSql($sql, $bindings)
+    protected function compilePreWheres(Builder $query): string
     {
-        $sql = preg_replace('/(?<!:):\d+/', '?', $sql);
+        $clauses = [];
+        foreach ($query->preWheres as $i => $preWhere) {
+            $connector = $i === 0 ? '' : ' ' . $preWhere['boolean'] . ' ';
 
-        return parent::substituteBindingsIntoRawSql($sql, $bindings);
+            if ($preWhere['type'] === 'raw') {
+                $clauses[] = $connector . $preWhere['sql'];
+            } elseif ($preWhere['type'] === 'basic') {
+                $clauses[] = $connector . $this->wrap($preWhere['column']) . ' ' . $preWhere['operator'] . ' ' . $this->parameter($preWhere['value']);
+            } elseif ($preWhere['type'] === 'in') {
+                $values = implode(', ', array_map([$this, 'parameter'], $preWhere['values']));
+                $not = !empty($preWhere['not']) ? 'not ' : '';
+                $clauses[] = $connector . $this->wrap($preWhere['column']) . ' ' . $not . 'in (' . $values . ')';
+            } elseif ($preWhere['type'] === 'between') {
+                $not = !empty($preWhere['not']) ? 'not ' : '';
+                $clauses[] = $connector . $this->wrap($preWhere['column']) . ' ' . $not . 'between ' . $this->parameter($preWhere['values'][0]) . ' and ' . $this->parameter($preWhere['values'][1]);
+            }
+        }
+
+        return 'PREWHERE ' . implode('', $clauses);
+    }
+
+    /**
+     * Compile LIMIT BY clause.
+     */
+    protected function compileLimitBy(Builder $query): string
+    {
+        $columns = implode(', ', array_map([$this, 'wrap'], $query->limitByColumns));
+
+        return "LIMIT {$query->limitByCount} BY {$columns}";
+    }
+
+    /**
+     * Compile the SETTINGS clause.
+     */
+    protected function compileSettings(array $settings): string
+    {
+        $parts = [];
+        foreach ($settings as $key => $value) {
+            $parts[] = is_int($value) ? "{$key}={$value}" : "{$key}='{$value}'";
+        }
+
+        return 'SETTINGS ' . implode(', ', $parts);
+    }
+
+    /**
+     * Insert text after the FROM clause in compiled SQL.
+     */
+    private function insertAfterFrom(string $sql, string $insert): string
+    {
+        // Find the FROM clause boundary — it ends before join/where/group/having/order/limit/union or end of string
+        if (preg_match('/\b(from\s+\S+(?:\s+as\s+\S+)?)/i', $sql, $match, PREG_OFFSET_CAPTURE)) {
+            $pos = $match[1][1] + strlen($match[1][0]);
+            return substr($sql, 0, $pos) . $insert . substr($sql, $pos);
+        }
+
+        return $sql . $insert;
+    }
+
+    /**
+     * Insert PREWHERE before the WHERE clause.
+     */
+    private function insertPreWhere(string $sql, string $preWhereSql): string
+    {
+        // Find " where " boundary
+        if (preg_match('/\bwhere\b/i', $sql, $match, PREG_OFFSET_CAPTURE)) {
+            $pos = $match[0][1];
+            return substr($sql, 0, $pos) . $preWhereSql . ' ' . substr($sql, $pos);
+        }
+
+        // No WHERE clause — insert PREWHERE at end (before GROUP BY, ORDER BY, LIMIT, etc.)
+        foreach (['group by', 'having', 'order by', 'limit', 'union'] as $keyword) {
+            if (preg_match('/\b' . $keyword . '\b/i', $sql, $match, PREG_OFFSET_CAPTURE)) {
+                $pos = $match[0][1];
+                return substr($sql, 0, $pos) . $preWhereSql . ' ' . substr($sql, $pos);
+            }
+        }
+
+        return $sql . ' ' . $preWhereSql;
+    }
+
+    /**
+     * Insert LIMIT BY before the final LIMIT clause.
+     */
+    private function insertLimitBy(string $sql, string $limitBySql): string
+    {
+        // Find the last "limit" keyword (not inside a subquery)
+        if (preg_match('/\blimit\s+\d+/i', $sql, $match, PREG_OFFSET_CAPTURE)) {
+            $pos = $match[0][1];
+            return substr($sql, 0, $pos) . $limitBySql . ' ' . substr($sql, $pos);
+        }
+
+        return $sql . ' ' . $limitBySql;
     }
 }

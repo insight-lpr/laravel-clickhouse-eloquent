@@ -2,8 +2,7 @@
 
 namespace LaravelClickhouseEloquent\Exceptions;
 
-
-class QueryException extends \ClickHouseDB\Exception\QueryException
+class QueryException extends ClickhouseException
 {
 
     public static function cannotUpdateEmptyValues(): self

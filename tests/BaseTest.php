@@ -12,13 +12,13 @@ class BaseTest extends TestCase
     public function testWorkWithClient()
     {
         Artisan::call('migrate');
-        /** @var \ClickHouseDB\Client $db */
+        /** @var \LaravelClickhouseEloquent\ClickhouseHttpClient $db */
         $db = DB::connection('clickhouse')->getClient();
         $db->write("TRUNCATE TABLE examples");
         $db->insert('examples', [[100, 'string']], ['f_int', 'f_string']);
         $db->write("ALTER TABLE examples UPDATE f_string='updated string' WHERE f_int=100");
         usleep(1e4);
-        $rows = $db->select("SELECT * FROM examples LIMIT 1")->rows();
+        $rows = $db->select("SELECT * FROM examples LIMIT 1");
         $this->assertEquals(100, $rows[0]['f_int']);
         $this->assertEquals('updated string', $rows[0]['f_string']);
     }
@@ -39,14 +39,14 @@ class BaseTest extends TestCase
         $query = Example::select()
             ->whereIn('f_string', ['zz'])
             ->whereBetween('f_int', [1, 2]);
-        $this->assertEquals("SELECT * FROM `examples` WHERE `f_string` IN ('zz') AND `f_int` BETWEEN 1 AND 2", $query->toSql());
+        $this->assertEquals("select * from `examples` where `f_string` in (?) and `f_int` between ? and ?", $query->toSql());
         $rows = $query->getRows();
         $this->assertNotEmpty($rows);
     }
 
     public function testPretendMigration()
     {
-        /** @var \ClickHouseDB\Client $db */
+        /** @var \LaravelClickhouseEloquent\ClickhouseHttpClient $db */
         $db = DB::connection('clickhouse')->getClient();
         $migration = file_get_contents(base_path('database/migrations/2022_01_01_000000_example.php'));
 
@@ -55,16 +55,16 @@ class BaseTest extends TestCase
         $migrationTmp = str_replace('examples', $tableName, $migration);
         file_put_contents(base_path('database/migrations/example_' . rand(0, 9999999999999999) . '.php'), $migrationTmp);
         Artisan::call('migrate');
-        $exist = $db->select("EXISTS $tableName")->fetchOne('result');
-        $this->assertEquals(1, $exist);
+        $rows = $db->select("EXISTS $tableName");
+        $this->assertEquals(1, $rows[0]['result']);
 
         // Pretend mode
         $tableName = 'examples_' . rand(0, 9999999999999999);
         $migrationTmp = str_replace('examples', $tableName, $migration);
         file_put_contents(base_path('database/migrations/example_' . rand(0, 9999999999999999) . '.php'), $migrationTmp);
         Artisan::call('migrate', ['--pretend' => true]);
-        $exist = $db->select("EXISTS $tableName")->fetchOne('result');
-        $this->assertEquals(0, $exist);
+        $rows = $db->select("EXISTS $tableName");
+        $this->assertEquals(0, $rows[0]['result']);
     }
 
     public function testOrWhere()
@@ -72,15 +72,18 @@ class BaseTest extends TestCase
         $query = Example::select()->where(function (Builder $q) {
             $q->where('f_int', 1)->orWhere('f_int', 2);
         });
-        $this->assertEquals("SELECT * FROM `examples` WHERE (`f_int` = 1 OR `f_int` = 2)", $query->toSql());
+        $this->assertEquals("select * from `examples` where (`f_int` = ? or `f_int` = ?)", $query->toSql());
     }
 
-    public function testToRawSqlMatchesToSql()
+    public function testToRawSqlSubstitutesBindings()
     {
         $query = Example::select()
             ->where('f_int', 1)
             ->where('f_string', 'zz');
 
-        $this->assertSame($query->toSql(), $query->toRawSql());
+        $rawSql = $query->toRawSql();
+        $this->assertStringContainsString('1', $rawSql);
+        $this->assertStringContainsString("'zz'", $rawSql);
+        $this->assertStringNotContainsString('?', $rawSql);
     }
 }

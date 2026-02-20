@@ -4,47 +4,60 @@ declare(strict_types=1);
 
 namespace LaravelClickhouseEloquent;
 
-use ClickHouseDB\Client;
-use ClickHouseDB\Statement;
 use Illuminate\Contracts\Support\Arrayable;
+use Illuminate\Database\Query\Builder as LaravelBuilder;
+use Illuminate\Database\Query\Expression;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Pagination\Paginator;
 use Illuminate\Support\Collection;
 use LaravelClickhouseEloquent\Exceptions\QueryException;
-use Tinderbox\ClickhouseBuilder\Query\BaseBuilder;
-use Tinderbox\ClickhouseBuilder\Query\Expression;
 
-class Builder extends BaseBuilder
+class Builder extends LaravelBuilder
 {
-
-    use WithClient;
-
-    /** @var string */
+    /** @var string|null Table for DELETE/UPDATE/OPTIMIZE */
     protected $tableSources;
-    /** @var Client */
-    protected $client;
+
+    /** @var array SETTINGS clause key-value pairs */
     protected $settings = [];
-    /** @var array */
+
+    /** @var array CTE definitions */
     protected $ctes = [];
 
-    /**
-     * The name of the database connection to use.
-     *
-     * @var string|null
-     */
-    protected ?string $connection = Connection::DEFAULT_NAME;
+    // ClickHouse-specific query state
 
-    public function __construct(Client $client = null)
+    /** @var bool Use FINAL modifier after FROM */
+    public bool $useFinal = false;
+
+    /** @var float|null SAMPLE coefficient */
+    public ?float $sampleCoefficient = null;
+
+    /** @var array PREWHERE clauses */
+    public array $preWheres = [];
+
+    /** @var int|null LIMIT BY count */
+    public ?int $limitByCount = null;
+
+    /** @var array LIMIT BY columns */
+    public array $limitByColumns = [];
+
+    /** @var string|null ARRAY JOIN column */
+    public ?string $arrayJoinColumn = null;
+
+    /** @var string|null ARRAY JOIN type (LEFT, INNER, or null) */
+    public ?string $arrayJoinType = null;
+
+    public function __construct(Connection $connection)
     {
-        $this->grammar = new Grammar();
-        $this->client = $client ?? $this->getThisClient();
+        parent::__construct($connection, $connection->getQueryGrammar());
     }
+
+    // -----------------------------------------------------------------
+    // SETTINGS
+    // -----------------------------------------------------------------
 
     /**
      * Set the SETTINGS clause for the SELECT statement.
      * @link https://clickhouse.com/docs/en/sql-reference/statements/select#settings-in-select-query
-     * @param array $settings For example: [max_threads => 3]
-     * @return $this
      */
     public function settings(array $settings): self
     {
@@ -57,33 +70,221 @@ class Builder extends BaseBuilder
         return $this->settings;
     }
 
+    // -----------------------------------------------------------------
+    // ClickHouse-specific clauses
+    // -----------------------------------------------------------------
+
     /**
-     * @return Statement
+     * Add FINAL modifier to SELECT (for ReplacingMergeTree deduplication).
      */
-    public function get(): Statement
+    public function final(bool $final = true): self
     {
-        return $this->client->select($this->toSql());
+        $this->useFinal = $final;
+        return $this;
     }
 
     /**
-     * @return array
+     * Add SAMPLE clause for approximate query processing.
+     */
+    public function sample(float $coefficient): self
+    {
+        $this->sampleCoefficient = $coefficient;
+        return $this;
+    }
+
+    /**
+     * Add PREWHERE clause (ClickHouse optimization — filters before reading columns).
+     */
+    public function preWhere(string|\Closure $column, mixed $operator = null, mixed $value = null, string $boolean = 'and'): self
+    {
+        if ($column instanceof \Closure) {
+            // TODO: nested prewhere groups could be supported here
+            return $this;
+        }
+
+        if (func_num_args() === 2) {
+            $value = $operator;
+            $operator = '=';
+        }
+
+        $this->preWheres[] = [
+            'type' => 'basic',
+            'column' => $column,
+            'operator' => $operator,
+            'value' => $value,
+            'boolean' => $boolean,
+        ];
+
+        $this->addBinding($value, 'where');
+
+        return $this;
+    }
+
+    /**
+     * Add a raw PREWHERE expression.
+     */
+    public function preWhereRaw(string $expression): self
+    {
+        $this->preWheres[] = [
+            'type' => 'raw',
+            'sql' => $expression,
+            'boolean' => 'and',
+        ];
+
+        return $this;
+    }
+
+    /**
+     * Add PREWHERE IN clause.
+     */
+    public function preWhereIn(string $column, array $values, string $boolean = 'and', bool $not = false): self
+    {
+        $this->preWheres[] = [
+            'type' => 'in',
+            'column' => $column,
+            'values' => $values,
+            'boolean' => $boolean,
+            'not' => $not,
+        ];
+
+        foreach ($values as $val) {
+            $this->addBinding($val, 'where');
+        }
+
+        return $this;
+    }
+
+    /**
+     * Add PREWHERE NOT IN clause.
+     */
+    public function preWhereNotIn(string $column, array $values, string $boolean = 'and'): self
+    {
+        return $this->preWhereIn($column, $values, $boolean, true);
+    }
+
+    /**
+     * Add PREWHERE BETWEEN clause.
+     */
+    public function preWhereBetween(string $column, array $values, string $boolean = 'and', bool $not = false): self
+    {
+        $this->preWheres[] = [
+            'type' => 'between',
+            'column' => $column,
+            'values' => $values,
+            'boolean' => $boolean,
+            'not' => $not,
+        ];
+
+        $this->addBinding($values[0], 'where');
+        $this->addBinding($values[1], 'where');
+
+        return $this;
+    }
+
+    /**
+     * Add PREWHERE NOT BETWEEN clause.
+     */
+    public function preWhereNotBetween(string $column, array $values, string $boolean = 'and'): self
+    {
+        return $this->preWhereBetween($column, $values, $boolean, true);
+    }
+
+    /**
+     * Add LIMIT BY clause (ClickHouse-specific: limits rows per group).
+     */
+    public function limitBy(int $count, string ...$columns): self
+    {
+        $this->limitByCount = $count;
+        $this->limitByColumns = $columns;
+
+        return $this;
+    }
+
+    /**
+     * Add ARRAY JOIN clause.
+     */
+    public function arrayJoin(string $column, ?string $type = null): self
+    {
+        $this->arrayJoinColumn = $column;
+        $this->arrayJoinType = $type;
+
+        return $this;
+    }
+
+    /**
+     * Add LEFT ARRAY JOIN clause.
+     */
+    public function leftArrayJoin(string $column): self
+    {
+        return $this->arrayJoin($column, 'LEFT');
+    }
+
+    // -----------------------------------------------------------------
+    // Query execution
+    // -----------------------------------------------------------------
+
+    /**
+     * Execute the query and return rows as an array of associative arrays.
      */
     public function getRows(): array
     {
-        return $this->get()->rows();
+        return $this->connection->select($this->toSql(), $this->getBindings());
     }
 
     /**
-     * Paginate the query using Laravel-style paginator.
-     *
-     * @param  int|callable  $perPage
-     * @param  array|string|\Illuminate\Contracts\Support\Arrayable  $columns
-     * @param  string  $pageName
-     * @param  int|null  $page
-     * @param  int|callable|null  $total
-     * @return LengthAwarePaginator
+     * For delete query
      */
-    public function paginate(int|callable $perPage = 15, array|string|Arrayable $columns = ['*'], string $pageName = 'page', ?int $page = null, int|callable|null $total = null): LengthAwarePaginator
+    public function setSourcesTable(string $table): self
+    {
+        $this->tableSources = $table;
+        return $this;
+    }
+
+    /**
+     * Note! This is a heavy operation not designed for frequent use.
+     */
+    public function delete($id = null): bool
+    {
+        $table = $this->tableSources ?? $this->from;
+        $wheres = $this->grammar->compileWheres($this);
+        $sql = "ALTER TABLE {$table} DELETE {$wheres}";
+
+        return $this->connection->statement($sql, $this->getBindings());
+    }
+
+    /**
+     * Note! This is a heavy operation not designed for frequent use.
+     */
+    public function update(array $values): bool
+    {
+        if (empty($values)) {
+            throw QueryException::cannotUpdateEmptyValues();
+        }
+
+        $table = $this->tableSources ?? $this->from;
+        $set = [];
+        foreach ($values as $key => $value) {
+            $set[] = "`{$key}` = " . $this->grammar->wrap($value);
+        }
+        $wheres = $this->grammar->compileWheres($this);
+        $sql = "ALTER TABLE {$table} UPDATE " . implode(', ', $set) . ' ' . $wheres;
+
+        return $this->connection->statement($sql, $this->getBindings());
+    }
+
+    public function newQuery(): self
+    {
+        return new static($this->connection);
+    }
+
+    // -----------------------------------------------------------------
+    // Pagination
+    // -----------------------------------------------------------------
+
+    /**
+     * Paginate the query using Laravel-style paginator.
+     */
+    public function paginate($perPage = 15, $columns = ['*'], $pageName = 'page', $page = null, $total = null): LengthAwarePaginator
     {
         $page = $page ?? Paginator::resolveCurrentPage($pageName);
         $page = max(1, (int) $page);
@@ -98,9 +299,7 @@ class Builder extends BaseBuilder
         $perPage = (int) $perPage;
         $perPage = $perPage > 0 ? $perPage : 15;
 
-        $columns = $this->normalizeColumns($columns);
-
-        $items = $total ? $this->getPaginatedItems($page, $perPage, $columns) : [];
+        $items = $total ? $this->forPage($page, $perPage)->getRows() : [];
 
         return new LengthAwarePaginator(
             new Collection($items),
@@ -115,154 +314,34 @@ class Builder extends BaseBuilder
     }
 
     /**
-     * Get the raw SQL representation of the query (bindings are already embedded).
-     *
-     * @return string
-     */
-    public function toRawSql(): string
-    {
-        return $this->toSql();
-    }
-
-    /**
      * Chunk the results of the query.
-     *
-     * @param int $count
-     * @param callable $callback
      */
-    public function chunk(int $count, callable $callback): void
+    public function chunk($count, callable $callback): bool
     {
-        $offset = 0;
+        $page = 1;
         do {
-            $rows = $this->limit($count, $offset)->getRows();
-            $callback($rows);
-            $offset += $count;
-        } while ($rows);
-    }
+            $rows = $this->forPage($page, $count)->getRows();
+            $callback(new Collection($rows));
+            $page++;
+        } while (!empty($rows));
 
-    /**
-     * Apply limit/offset for a specific pagination page.
-     */
-    protected function forPage(int $page, int $perPage): self
-    {
-        $page = max(1, $page);
-        $offset = ($page - 1) * $perPage;
-
-        return $this->limit($perPage, $offset);
-    }
-
-    /**
-     * Normalize the columns parameter into an array.
-     *
-     * @param  array|string|\Illuminate\Contracts\Support\Arrayable  $columns
-     * @return array
-     */
-    protected function normalizeColumns(array|string|Arrayable $columns): array
-    {
-        if ($columns instanceof Arrayable) {
-            return $columns->toArray();
-        }
-
-        return is_array($columns) ? $columns : [$columns];
-    }
-
-    /**
-     * Compile the scoped query used for paginated results.
-     *
-     * @param  array  $columns
-     * @return array
-     */
-    protected function getPaginatedItems(int $page, int $perPage, array $columns): array
-    {
-        $query = $this->cloneWithout(['limit' => null]);
-
-        if ($columns !== ['*']) {
-            $query->select(...$columns);
-        }
-
-        return $query->forPage($page, $perPage)->getRows();
-    }
-
-    /**
-     * Get the total count to drive pagination.
-     *
-     * @return int
-     */
-    protected function getCountForPagination(): int
-    {
-        $countQuery = $this->getCountQuery();
-        $rows = $countQuery->getRows();
-
-        if (!empty($countQuery->getGroups())) {
-            return count($rows);
-        }
-
-        return (int) ($rows[0]['count'] ?? 0);
+        return true;
     }
 
     /**
      * Resolve a value or callable helper.
-     *
-     * @param  mixed  $value
-     * @param  array<mixed>  $arguments
-     * @return mixed
      */
     protected function resolveValue(mixed $value, array $arguments = []): mixed
     {
         return is_callable($value) ? $value(...$arguments) : $value;
     }
 
-    /**
-     * For delete query
-     * @param string $table
-     * @return $this
-     */
-    public function setSourcesTable(string $table): self
-    {
-        $this->tableSources = $table;
-
-        return $this;
-    }
-
-    /**
-     * Note! This is a heavy operation not designed for frequent use.
-     * @return Statement
-     */
-    public function delete(): Statement
-    {
-        $table = $this->tableSources ?? $this->getFrom()->getTable();
-        $sql = "ALTER TABLE $table DELETE " . $this->grammar->compileWheresComponent($this, $this->getWheres());
-        return $this->client->write($sql);
-    }
-
-    /**
-     * Note! This is a heavy operation not designed for frequent use.
-     * @return Statement
-     */
-    public function update(array $values): Statement
-    {
-        if (empty($values)) {
-            throw QueryException::cannotUpdateEmptyValues();
-        }
-        $table = $this->tableSources ?? $this->getFrom()->getTable();
-        $set = [];
-        foreach ($values as $key => $value) {
-            $set[] = "`$key` = " . $this->grammar->wrap($value);
-        }
-        $sql = "ALTER TABLE $table UPDATE " . implode(', ', $set) . ' '
-            . $this->grammar->compileWheresComponent($this, $this->getWheres());
-        return $this->client->write($sql);
-    }
-
-    public function newQuery(): self
-    {
-        return new static($this->client);
-    }
+    // -----------------------------------------------------------------
+    // CTEs
+    // -----------------------------------------------------------------
 
     /**
      * Get the CTEs for the query.
-     *
-     * @return array
      */
     public function getCtes(): array
     {
@@ -273,16 +352,12 @@ class Builder extends BaseBuilder
      * Add a Common Table Expression (CTE) subquery.
      *
      * WITH name AS (SELECT ...)
-     *
-     * @param string $name The CTE alias name
-     * @param \Closure|Builder|string $query The subquery as closure, Builder, or raw SQL
-     * @return $this
      */
-    public function withCte(string $name, \Closure|Builder|string $query): self
+    public function withCte(string $name, \Closure|self|string $query): self
     {
         $sql = match (true) {
             $query instanceof \Closure => $this->compileClosureToSql($query),
-            $query instanceof Builder => $query->toSql(),
+            $query instanceof self => $query->toSql(),
             default => $query,
         };
 
@@ -297,13 +372,10 @@ class Builder extends BaseBuilder
 
     /**
      * Compile a closure to SQL by executing it with a fresh Builder.
-     *
-     * @param \Closure $callback
-     * @return string
      */
     protected function compileClosureToSql(\Closure $callback): string
     {
-        $builder = new static($this->client);
+        $builder = new static($this->connection);
         $callback($builder);
         return $builder->toSql();
     }
@@ -312,17 +384,13 @@ class Builder extends BaseBuilder
      * Add a Common Table Expression (CTE) expression alias.
      *
      * WITH value AS name
-     *
-     * @param string $name The CTE alias name
-     * @param mixed $value Scalar, RawColumn/Expression, Closure, or Builder
-     * @return $this
      */
     public function withCteExpression(string $name, mixed $value): self
     {
         $sql = match (true) {
             $value instanceof \Closure => '(' . $this->compileClosureToSql($value) . ')',
-            $value instanceof Builder => '(' . $value->toSql() . ')',
-            $value instanceof Expression => $value->getValue(),
+            $value instanceof self => '(' . $value->toSql() . ')',
+            $value instanceof Expression => $value->getValue($this->grammar),
             is_string($value) => "'" . addslashes($value) . "'",
             is_bool($value) => $value ? '1' : '0',
             default => (string) $value,

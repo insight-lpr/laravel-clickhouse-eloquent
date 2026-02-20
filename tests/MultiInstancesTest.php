@@ -14,9 +14,9 @@ class MultiInstancesTest extends TestCase
         $rows = Example2::where('f_int', 1)->getRows();
         $this->assertCount(1, $rows);
         $this->assertEquals(2, $rows[0]['f_int2']);
-        /** @var \ClickHouseDB\Client $db */
+        /** @var \LaravelClickhouseEloquent\ClickhouseHttpClient $db */
         $db = DB::connection('clickhouse2')->getClient();
-        $rows = $db->select("SELECT * FROM examples2 LIMIT 1")->rows();
+        $rows = $db->select("SELECT * FROM examples2 LIMIT 1");
         $this->assertEquals(1, $rows[0]['f_int']);
     }
 }

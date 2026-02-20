@@ -3,8 +3,6 @@ declare(strict_types=1);
 
 namespace LaravelClickhouseEloquent\Expressions;
 
-use ClickHouseDB\Query\Expression\Expression;
-
 /**
  * Class InsertArray
  * @package LaravelClickhouseEloquent
@@ -13,7 +11,7 @@ use ClickHouseDB\Query\Expression\Expression;
  * @link    https://clickhouse.tech/docs/ru/sql-reference/data-types/array/
  * @example Model::insertAssoc([[1,'str',new InsertArray(['a','b'])]]);
  */
-class InsertArray implements Expression
+class InsertArray implements InsertExpression
 {
     public const TYPE_STRING        = 'string';
     public const TYPE_STRING_ESCAPE = 'string_e';

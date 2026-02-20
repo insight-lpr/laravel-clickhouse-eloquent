@@ -13,11 +13,4 @@
       0 => 'Termwind\\Laravel\\TermwindServiceProvider',
     ),
   ),
-  'the-tinderbox/clickhouse-builder' => 
-  array (
-    'providers' => 
-    array (
-      0 => 'Tinderbox\\ClickhouseBuilder\\Integrations\\Laravel\\ClickhouseServiceProvider',
-    ),
-  ),
 );

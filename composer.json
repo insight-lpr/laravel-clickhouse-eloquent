@@ -1,7 +1,7 @@
 {
   "name":"insight-lpr/laravel-clickhouse-eloquent",
   "version" : "0.2.0.0",
-  "description":"Adapter of the most popular library https://github.com/smi2/phpClickHouse to Laravel",
+  "description":"ClickHouse integration for Laravel with Eloquent-like ORM and query builder",
   "keywords":[
     "php",
     "laravel",
@@ -19,11 +19,11 @@
     }
   ],
   "require":{
-    "php":">=8.0",
-    "smi2/phpclickhouse":"^1.4.2",
-    "the-tinderbox/clickhouse-builder":"^6.0",
-    "illuminate/support":">=7",
-    "illuminate/database":">=7"
+    "php":">=8.1",
+    "ext-curl":"*",
+    "ext-json":"*",
+    "illuminate/support":">=9",
+    "illuminate/database":">=9"
   },
   "require-dev":{
     "laravel/framework":">=9",

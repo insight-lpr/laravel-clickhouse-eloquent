@@ -9,8 +9,7 @@
     5 => 'Illuminate\\Events\\EventServiceProvider',
     6 => 'Carbon\\Laravel\\ServiceProvider',
     7 => 'Termwind\\Laravel\\TermwindServiceProvider',
-    8 => 'Tinderbox\\ClickhouseBuilder\\Integrations\\Laravel\\ClickhouseServiceProvider',
-    9 => 'LaravelClickhouseEloquent\\ClickhouseServiceProvider',
+    8 => 'LaravelClickhouseEloquent\\ClickhouseServiceProvider',
   ),
   'eager' => 
   array (
@@ -22,8 +21,7 @@
     5 => 'Illuminate\\Events\\EventServiceProvider',
     6 => 'Carbon\\Laravel\\ServiceProvider',
     7 => 'Termwind\\Laravel\\TermwindServiceProvider',
-    8 => 'Tinderbox\\ClickhouseBuilder\\Integrations\\Laravel\\ClickhouseServiceProvider',
-    9 => 'LaravelClickhouseEloquent\\ClickhouseServiceProvider',
+    8 => 'LaravelClickhouseEloquent\\ClickhouseServiceProvider',
   ),
   'deferred' => 
   array (

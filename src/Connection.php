@@ -4,20 +4,15 @@ declare(strict_types=1);
 
 namespace LaravelClickhouseEloquent;
 
-use ClickHouseDB\Client;
 use Illuminate\Database\Connection as BaseConnection;
 
 class Connection extends BaseConnection
 {
     public const DEFAULT_NAME = "clickhouse";
 
-    /** @var Client */
-    protected Client $client;
+    protected ClickhouseHttpClient $client;
 
-    /**
-     * @return Client
-     */
-    public function getClient(): Client
+    public function getClient(): ClickhouseHttpClient
     {
         return $this->client;
     }
@@ -29,21 +24,7 @@ class Connection extends BaseConnection
     public static function createWithClient(array $config): static
     {
         $conn = new static(null, $config["database"], "", $config);
-        $conn->client = new Client($config);
-        $conn->client->database($config["database"]);
-        $conn->client->setTimeout((int) $config["timeout_query"]);
-        $conn->client->setConnectTimeOut((int) $config["timeout_connect"]);
-        if ($configSettings = &$config["settings"]) {
-            $settings = $conn->getClient()->settings();
-            foreach ($configSettings as $sName => $sValue) {
-                $settings->set($sName, $sValue);
-            }
-        }
-        if ($retries = (int) ($config["retries"] ?? null)) {
-            $curler = new CurlerRollingWithRetries();
-            $curler->setRetries($retries);
-            $conn->client->transport()->setDirtyCurler($curler);
-        }
+        $conn->client = new ClickhouseHttpClient($config);
 
         return $conn;
     }
@@ -73,15 +54,13 @@ class Connection extends BaseConnection
     /** @inheritDoc */
     public function select($query, $bindings = [], $useReadPdo = true): array
     {
-        $query = QueryGrammar::prepareParameters($query);
-
-        return $this->client->select($query, $bindings)->rows();
+        return $this->client->select($query, $bindings);
     }
 
     /** @inheritDoc */
     public function statement($query, $bindings = []): bool
     {
-        return !$this->client->write($query, $bindings)->isError();
+        return $this->client->write($query, $bindings);
     }
 
     /** @inheritDoc */

@@ -2,21 +2,20 @@
 
 namespace LaravelClickhouseEloquent;
 
-use ClickHouseDB\Client;
 use Illuminate\Support\Facades\DB;
 
 trait WithClient
 {
-    public function getThisClient(): Client
+    public function getThisClient(): ClickhouseHttpClient
     {
         return DB::connection($this->connection)->getClient();
     }
 
     /**
-     * @return Client
+     * @return ClickhouseHttpClient
      * @deprecated use $this->getThisClient() instead
      */
-    public static function getClient(): Client
+    public static function getClient(): ClickhouseHttpClient
     {
         return DB::connection((new static())->connection)->getClient();
     }

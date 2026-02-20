@@ -22,8 +22,8 @@ class CteTest extends TestCase
         $sql = $query->toSql();
 
         $this->assertStringContainsString('WITH', $sql);
-        $this->assertStringContainsString('active AS (SELECT', $sql);
-        $this->assertStringContainsString('FROM `active`', $sql);
+        $this->assertStringContainsString('active AS (select', $sql);
+        $this->assertStringContainsString('from `active`', $sql);
     }
 
     /**
@@ -55,7 +55,7 @@ class CteTest extends TestCase
         $sql = $query->toSql();
 
         $this->assertStringContainsString('WITH', $sql);
-        $this->assertStringContainsString('sub AS (SELECT', $sql);
+        $this->assertStringContainsString('sub AS (select', $sql);
     }
 
     /**
@@ -123,7 +123,7 @@ class CteTest extends TestCase
 
         $sql = $query->toSql();
 
-        $this->assertStringContainsString('(SELECT max(f_int) FROM `examples`) AS max_val', $sql);
+        $this->assertStringContainsString('(select max(f_int) from `examples`) AS max_val', $sql);
     }
 
     /**
@@ -142,10 +142,10 @@ class CteTest extends TestCase
 
         $this->assertStringContainsString('WITH', $sql);
         $this->assertStringContainsString('50 AS threshold', $sql);
-        $this->assertStringContainsString('filtered AS (SELECT', $sql);
+        $this->assertStringContainsString('filtered AS (select', $sql);
         // Verify order: expressions before subqueries in SQL
         $thresholdPos = strpos($sql, '50 AS threshold');
-        $filteredPos = strpos($sql, 'filtered AS (SELECT');
+        $filteredPos = strpos($sql, 'filtered AS (select');
         $this->assertLessThan($filteredPos, $thresholdPos);
     }
 
@@ -189,8 +189,6 @@ class CteTest extends TestCase
                   ->from('examples')
                   ->where('f_int', '>', new RawColumn('threshold'));
             })
-            ->newQuery()
-            ->select('*')
             ->from('filtered')
             ->getRows();
 

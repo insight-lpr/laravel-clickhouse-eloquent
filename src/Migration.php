@@ -4,8 +4,6 @@ declare(strict_types=1);
 
 namespace LaravelClickhouseEloquent;
 
-use ClickHouseDB\Statement;
-use ClickHouseDB\Transport\CurlerRequest;
 use Illuminate\Database\Migrations\Migration as BaseMigration;
 use Symfony\Component\Console\Output\ConsoleOutput;
 
@@ -19,9 +17,9 @@ class Migration extends BaseMigration
     /**
      * @param string $sql
      * @param array $bindings
-     * @return Statement
+     * @return bool
      */
-    protected static function write(string $sql, array $bindings = []): Statement
+    protected static function write(string $sql, array $bindings = []): bool
     {
         $instance = new static();
         foreach (debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS) as $trace) {
@@ -30,7 +28,7 @@ class Migration extends BaseMigration
                 (new ConsoleOutput())->writeln(
                     "<comment>Clickhouse</comment> <info>$name on connection $instance->connection:</info> $sql"
                 );
-                return new Statement(new CurlerRequest());
+                return true;
             }
         }
         return $instance->getThisClient()->write($sql, $bindings);
