@@ -6,6 +6,10 @@ namespace LaravelClickhouseEloquent;
 
 use ClickHouseDB\Client;
 use ClickHouseDB\Statement;
+use Illuminate\Contracts\Support\Arrayable;
+use Illuminate\Pagination\LengthAwarePaginator;
+use Illuminate\Pagination\Paginator;
+use Illuminate\Support\Collection;
 use LaravelClickhouseEloquent\Exceptions\QueryException;
 use Tinderbox\ClickhouseBuilder\Query\BaseBuilder;
 use Tinderbox\ClickhouseBuilder\Query\Expression;
@@ -70,6 +74,57 @@ class Builder extends BaseBuilder
     }
 
     /**
+     * Paginate the query using Laravel-style paginator.
+     *
+     * @param  int|callable  $perPage
+     * @param  array|string|\Illuminate\Contracts\Support\Arrayable  $columns
+     * @param  string  $pageName
+     * @param  int|null  $page
+     * @param  int|callable|null  $total
+     * @return LengthAwarePaginator
+     */
+    public function paginate(int|callable $perPage = 15, array|string|Arrayable $columns = ['*'], string $pageName = 'page', ?int $page = null, int|callable|null $total = null): LengthAwarePaginator
+    {
+        $page = $page ?? Paginator::resolveCurrentPage($pageName);
+        $page = max(1, (int) $page);
+
+        $total = $this->resolveValue($total);
+        if (is_null($total)) {
+            $total = $this->getCountForPagination();
+        }
+        $total = (int) $total;
+
+        $perPage = $this->resolveValue($perPage, [$total]);
+        $perPage = (int) $perPage;
+        $perPage = $perPage > 0 ? $perPage : 15;
+
+        $columns = $this->normalizeColumns($columns);
+
+        $items = $total ? $this->getPaginatedItems($page, $perPage, $columns) : [];
+
+        return new LengthAwarePaginator(
+            new Collection($items),
+            $total,
+            $perPage,
+            $page,
+            [
+                'path' => Paginator::resolveCurrentPath(),
+                'pageName' => $pageName,
+            ]
+        );
+    }
+
+    /**
+     * Get the raw SQL representation of the query (bindings are already embedded).
+     *
+     * @return string
+     */
+    public function toRawSql(): string
+    {
+        return $this->toSql();
+    }
+
+    /**
      * Chunk the results of the query.
      *
      * @param int $count
@@ -83,6 +138,78 @@ class Builder extends BaseBuilder
             $callback($rows);
             $offset += $count;
         } while ($rows);
+    }
+
+    /**
+     * Apply limit/offset for a specific pagination page.
+     */
+    protected function forPage(int $page, int $perPage): self
+    {
+        $page = max(1, $page);
+        $offset = ($page - 1) * $perPage;
+
+        return $this->limit($perPage, $offset);
+    }
+
+    /**
+     * Normalize the columns parameter into an array.
+     *
+     * @param  array|string|\Illuminate\Contracts\Support\Arrayable  $columns
+     * @return array
+     */
+    protected function normalizeColumns(array|string|Arrayable $columns): array
+    {
+        if ($columns instanceof Arrayable) {
+            return $columns->toArray();
+        }
+
+        return is_array($columns) ? $columns : [$columns];
+    }
+
+    /**
+     * Compile the scoped query used for paginated results.
+     *
+     * @param  array  $columns
+     * @return array
+     */
+    protected function getPaginatedItems(int $page, int $perPage, array $columns): array
+    {
+        $query = $this->cloneWithout(['limit' => null]);
+
+        if ($columns !== ['*']) {
+            $query->select(...$columns);
+        }
+
+        return $query->forPage($page, $perPage)->getRows();
+    }
+
+    /**
+     * Get the total count to drive pagination.
+     *
+     * @return int
+     */
+    protected function getCountForPagination(): int
+    {
+        $countQuery = $this->getCountQuery();
+        $rows = $countQuery->getRows();
+
+        if (!empty($countQuery->getGroups())) {
+            return count($rows);
+        }
+
+        return (int) ($rows[0]['count'] ?? 0);
+    }
+
+    /**
+     * Resolve a value or callable helper.
+     *
+     * @param  mixed  $value
+     * @param  array<mixed>  $arguments
+     * @return mixed
+     */
+    protected function resolveValue(mixed $value, array $arguments = []): mixed
+    {
+        return is_callable($value) ? $value(...$arguments) : $value;
     }
 
     /**

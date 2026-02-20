@@ -74,4 +74,13 @@ class BaseTest extends TestCase
         });
         $this->assertEquals("SELECT * FROM `examples` WHERE (`f_int` = 1 OR `f_int` = 2)", $query->toSql());
     }
+
+    public function testToRawSqlMatchesToSql()
+    {
+        $query = Example::select()
+            ->where('f_int', 1)
+            ->where('f_string', 'zz');
+
+        $this->assertSame($query->toSql(), $query->toRawSql());
+    }
 }

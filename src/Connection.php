@@ -89,4 +89,17 @@ class Connection extends BaseConnection
     {
         return (int) $this->statement($query, $bindings);
     }
+
+    /**
+     * Escape a string value without relying on PDO.
+     *
+     * @param  string  $value
+     * @return string
+     */
+    protected function escapeString($value)
+    {
+        $value = str_replace("'", "''", $value);
+
+        return "'{$value}'";
+    }
 }

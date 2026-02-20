@@ -14,12 +14,7 @@ class QueryGrammar extends Grammar
     /** @inheritDoc */
     public function parameterize(array $values): string
     {
-        $params = [];
-        for ($i = 0, $iMax = count($values); $i < $iMax; $i++) {
-            $params[] = ":$i";
-        }
-
-        return implode(', ', $params);
+        return implode(', ', array_map([$this, 'parameter'], $values));
     }
 
     /** @inheritDoc */
@@ -94,5 +89,19 @@ class QueryGrammar extends Grammar
         }
 
         return 'WITH ' . implode(', ', $parts) . ' ';
+    }
+
+    /**
+     * Convert the colon-style placeholders back to question marks before raw formatting.
+     *
+     * @param string $sql
+     * @param array $bindings
+     * @return string
+     */
+    public function substituteBindingsIntoRawSql($sql, $bindings)
+    {
+        $sql = preg_replace('/(?<!:):\d+/', '?', $sql);
+
+        return parent::substituteBindingsIntoRawSql($sql, $bindings);
     }
 }
