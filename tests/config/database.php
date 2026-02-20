@@ -63,6 +63,19 @@ return [
             'https' => false,
             'retries' => 0,
         ],
+
+        'clickhouse-cloud' => [
+            'driver' => 'clickhouse',
+            'host' => env('CLICKHOUSE_CLOUD_HOST'),
+            'port' => env('CLICKHOUSE_CLOUD_PORT', '8443'),
+            'database' => env('CLICKHOUSE_CLOUD_DATABASE', 'default'),
+            'username' => env('CLICKHOUSE_CLOUD_USERNAME', 'readonly_user'),
+            'password' => env('CLICKHOUSE_CLOUD_PASSWORD', ''),
+            'timeout_connect' => env('CLICKHOUSE_CLOUD_TIMEOUT_CONNECT', 5),
+            'timeout_query' => env('CLICKHOUSE_CLOUD_TIMEOUT_QUERY', 10),
+            'https' => (bool) env('CLICKHOUSE_CLOUD_HTTPS', true),
+            'retries' => env('CLICKHOUSE_CLOUD_RETRIES', 1),
+        ],
     ],
 
     /*

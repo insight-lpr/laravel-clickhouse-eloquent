@@ -6,25 +6,35 @@ class Grammar extends \Tinderbox\ClickhouseBuilder\Query\Grammar
 {
     public function __construct()
     {
-        // Prepend 'ctes' to beginning of select components
-        array_unshift($this->selectComponents, 'ctes');
         // Add 'settings' to end of select components
         $this->selectComponents[] = 'settings';
     }
 
     /**
-     * Compile the CTEs component of a SELECT query.
+     * Override compileSelect to place CTEs before the SELECT keyword.
      *
-     * @param Builder $builder
+     * @param \Tinderbox\ClickhouseBuilder\Query\BaseBuilder $query
+     * @return string
+     */
+    public function compileSelect(\Tinderbox\ClickhouseBuilder\Query\BaseBuilder $query)
+    {
+        $sql = parent::compileSelect($query);
+
+        if ($query instanceof Builder && !empty($query->getCtes())) {
+            $sql = $this->compileCtes($query->getCtes()) . ' ' . $sql;
+        }
+
+        return $sql;
+    }
+
+    /**
+     * Compile the CTEs into a WITH clause.
+     *
      * @param array $ctes
      * @return string
      */
-    public function compileCTEsComponent(Builder $builder, array $ctes): string
+    protected function compileCtes(array $ctes): string
     {
-        if (empty($ctes)) {
-            return '';
-        }
-
         $parts = [];
         foreach ($ctes as $cte) {
             if ($cte['type'] === 'expression') {
