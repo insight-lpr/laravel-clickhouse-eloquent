@@ -66,9 +66,9 @@ class QueryGrammar extends Grammar
     {
         $sql = parent::compileSelect($query);
 
-        // Check for CTEs added via macro
-        if (isset($query->clickhouseCtes) && !empty($query->clickhouseCtes)) {
-            $sql = $this->compileCtes($query->clickhouseCtes) . $sql;
+        $ctes = CteRegistry::getCtes($query);
+        if (!empty($ctes)) {
+            $sql = $this->compileCtes($ctes) . $sql;
         }
 
         return $sql;
