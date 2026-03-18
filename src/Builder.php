@@ -22,6 +22,8 @@ class Builder extends BaseBuilder
     protected $settings = [];
     /** @var array */
     protected $ctes = [];
+    /** @var array Bindings from CTE subqueries, prepended before main query bindings */
+    protected array $cteBindings = [];
 
     /**
      * The name of the database connection to use.
@@ -151,13 +153,19 @@ class Builder extends BaseBuilder
      * @param \Closure|Builder|string $query The subquery as closure, Builder, or raw SQL
      * @return $this
      */
-    public function withCte(string $name, \Closure|Builder|string $query): self
+    public function withCte(string $name, \Closure|self|string $query): self
     {
-        $sql = match (true) {
-            $query instanceof \Closure => $this->compileClosureToSql($query),
-            $query instanceof Builder => $query->toSql(),
-            default => $query,
+        $builder = match (true) {
+            $query instanceof \Closure => $this->compileClosure($query),
+            $query instanceof self => $query,
+            default => null,
         };
+
+        $sql = $builder ? $builder->toSql() : $query;
+
+        if ($builder) {
+            array_push($this->cteBindings, ...$builder->getBindings());
+        }
 
         $this->ctes[] = [
             'name' => $name,
@@ -169,16 +177,26 @@ class Builder extends BaseBuilder
     }
 
     /**
-     * Compile a closure to SQL by executing it with a fresh Builder.
+     * Compile a closure by executing it with a fresh Builder.
      *
      * @param \Closure $callback
-     * @return string
+     * @return self
      */
-    protected function compileClosureToSql(\Closure $callback): string
+    protected function compileClosure(\Closure $callback): self
     {
         $builder = new static($this->client);
         $callback($builder);
-        return $builder->toSql();
+        return $builder;
+    }
+
+    /**
+     * Get all bindings, with CTE bindings prepended.
+     *
+     * @return array
+     */
+    public function getBindings(): array
+    {
+        return $this->cteBindings;
     }
 
     /**
@@ -193,8 +211,8 @@ class Builder extends BaseBuilder
     public function withCteExpression(string $name, mixed $value): self
     {
         $sql = match (true) {
-            $value instanceof \Closure => '(' . $this->compileClosureToSql($value) . ')',
-            $value instanceof Builder => '(' . $value->toSql() . ')',
+            $value instanceof \Closure => '(' . $this->compileClosure($value)->toSql() . ')',
+            $value instanceof self => '(' . $value->toSql() . ')',
             $value instanceof Expression => $value->getValue(),
             is_string($value) => "'" . addslashes($value) . "'",
             is_bool($value) => $value ? '1' : '0',
