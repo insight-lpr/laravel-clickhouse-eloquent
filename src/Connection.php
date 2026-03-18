@@ -71,6 +71,12 @@ class Connection extends BaseConnection
     }
 
     /** @inheritDoc */
+    public function query()
+    {
+        return new Builder($this->client);
+    }
+
+    /** @inheritDoc */
     public function select($query, $bindings = [], $useReadPdo = true): array
     {
         $query = QueryGrammar::prepareParameters($query);

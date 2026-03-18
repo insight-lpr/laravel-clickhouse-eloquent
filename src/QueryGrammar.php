@@ -56,43 +56,4 @@ class QueryGrammar extends Grammar
         return "alter table {$table} delete {$where}";
     }
 
-    /**
-     * Compile a select query into SQL with CTE support.
-     *
-     * @param Builder $query
-     * @return string
-     */
-    public function compileSelect(Builder $query): string
-    {
-        $sql = parent::compileSelect($query);
-
-        $ctes = CteRegistry::getCtes($query);
-        if (!empty($ctes)) {
-            $sql = $this->compileCtes($ctes) . $sql;
-        }
-
-        return $sql;
-    }
-
-    /**
-     * Compile the CTEs into a WITH clause.
-     *
-     * @param array $ctes
-     * @return string
-     */
-    protected function compileCtes(array $ctes): string
-    {
-        $parts = [];
-        foreach ($ctes as $cte) {
-            if ($cte['type'] === 'expression') {
-                // Expression style: value AS name
-                $parts[] = "{$cte['sql']} AS {$cte['name']}";
-            } else {
-                // Subquery style: name AS (SELECT ...)
-                $parts[] = "{$cte['name']} AS ({$cte['sql']})";
-            }
-        }
-
-        return 'WITH ' . implode(', ', $parts) . ' ';
-    }
 }

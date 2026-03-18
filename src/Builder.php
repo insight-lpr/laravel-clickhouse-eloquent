@@ -210,10 +210,19 @@ class Builder extends BaseBuilder
      */
     public function withCteExpression(string $name, mixed $value): self
     {
+        $builder = match (true) {
+            $value instanceof \Closure => $this->compileClosure($value),
+            $value instanceof self => $value,
+            default => null,
+        };
+
+        if ($builder) {
+            array_push($this->cteBindings, ...$builder->getBindings());
+        }
+
         $sql = match (true) {
-            $value instanceof \Closure => '(' . $this->compileClosure($value)->toSql() . ')',
-            $value instanceof self => '(' . $value->toSql() . ')',
-            $value instanceof Expression => $value->getValue(),
+            $builder !== null => '(' . $builder->toSql() . ')',
+            $value instanceof Expression => $value->getValue($this->grammar),
             is_string($value) => "'" . addslashes($value) . "'",
             is_bool($value) => $value ? '1' : '0',
             default => (string) $value,
